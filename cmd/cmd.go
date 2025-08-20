@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"xfirefly/pkg/cli"
 )
@@ -23,7 +22,8 @@ func Execute() {
 	options, err := cli.NewCmdOptions()
 	if err != nil {
 		// 在初始化logger之前的错误使用默认logger
-		color.Red(fmt.Sprintf("[ERROR] %s", err.Error()))
+		//color.Red(fmt.Sprintf("[ERROR] %s", err.Error()))
+		fmt.Println(fmt.Sprintf("[ERROR] %s", err.Error()))
 		os.Exit(1)
 	}
 
