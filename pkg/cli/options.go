@@ -10,32 +10,52 @@ import (
 )
 
 // NewCmdOptions 创建并解析命令行选项
-func NewCmdOptions() (*types.CmdOptions, error) {
-	options := &types.CmdOptions{}
+func NewCmdOptions() (*types.CmdOptionsType, error) {
+	// 声明命令行参数类型
+	options := &types.CmdOptionsType{}
+	// 声明参数结构体
 	flagSet := goflags.NewFlagSet()
-	flagSet.CreateGroup("input", "目标",
-		flagSet.StringSliceVarP(&options.Target, "url", "u", nil, "要扫描的目标URL/主机", goflags.NormalizedStringSliceOptions),
-		flagSet.StringVarP(&options.TargetsFile, "file", "f", "", "要扫描的目标URL/主机列表（每行一个）"),
-		flagSet.IntVarP(&options.Threads, "threads", "t", 5, "并发线程数"),
-		flagSet.IntVarP(&options.RuleThreads, "rulethreads", "rt", 200, "指纹规则并发线程数，最大50000"),
+	// 目标拆解
+	flagSet.CreateGroup("target", "TARGET",
+		flagSet.StringSliceVarP(&options.Target, "target", "u", nil, "target URLs/hosts to scan", goflags.NormalizedStringSliceOptions),
+		flagSet.StringVarP(&options.TargetsFile, "list", "l", "", "path to file containing a list of target URLs/hosts to scan (one per line)"),
 	)
-	flagSet.CreateGroup("output", "输出",
-		flagSet.StringVarP(&options.Output, "output", "o", "", "输出文件路径（支持txt/csv格式）"),
-		flagSet.BoolVar(&options.JSONOutput, "json", false, "使用JSON格式输出结果到文件（默认关闭）"),
-		flagSet.StringVar(&options.SockOutput, "sock", "", "socket文件输出路径，启用后以JSON格式输出到socket文件"),
+	// 结果输出
+	flagSet.CreateGroup("output", "OUTPUT",
+		flagSet.StringVarP(&options.Output, "output", "o", "", "output file to write found result"),
+		flagSet.BoolVar(&options.JSONOutput, "json", false, "write output in JSON format"),
+		flagSet.StringVar(&options.SockOutput, "sock", "", "write output socket in JOSN format"),
 	)
-	flagSet.CreateGroup("debug", "调试",
-		flagSet.StringVar(&options.Proxy, "proxy", "", "要使用的http/socks5代理列表（逗号分隔或文件输入）"),
-		flagSet.StringVar(&options.PocOptions.PocYaml, "p", "", "测试单个的yaml文件"),
-		flagSet.StringVar(&options.PocOptions.PocFile, "pf", "", "测试指定目录下面所有的yaml文件"),
-		flagSet.IntVar(&options.Timeout, "timeout", 3, "所有请求的超时时间（秒），默认3秒"),
-		flagSet.BoolVar(&options.Debug, "debug", false, "是否开启debug模式，默认关闭"),
-		flagSet.BoolVar(&options.NoFileLog, "no-file-log", false, "禁用文件日志记录，仅输出到控制台"),
+	// 优化参数
+	flagSet.CreateGroup("optimizations", "OPTIMIZATIONS",
+		flagSet.StringVarP(&options.Proxy, "proxy", "p", "", "string of http/socks5 proxy to use"),
+		flagSet.IntVarP(&options.Threads, "threads", "t", 5, "maximum number of requests to send per second"),
+		flagSet.IntVarP(&options.RuleThreads, "rulethreads", "rt", 200, "maximum number of fingers to send per second"),
+		flagSet.IntVar(&options.Timeout, "timeout", 3, "time to wait in seconds before timeout (default 3)"),
+		flagSet.IntVar(&options.Retries, "retrise", 1, "number of times to retry a failed request (default 1)"),
+		flagSet.IntVar(&options.MaxRedirects, "max-redirects", 5, "max number of redirects to follow for http templates (default 5)"),
+	)
+	// 日志管理
+	flagSet.CreateGroup("debug", "DEBUG",
+		flagSet.BoolVar(&options.Debug, "debug", false, "show verbose output"),
+		flagSet.BoolVar(&options.Timestamp, "timestamp", false, "Output with timestamp"),
+		flagSet.BoolVar(&options.FileLog, "file-log", false, "Output the log to file"),
+	)
+	// 指纹参数
+	flagSet.CreateGroup("finger", "FINGER",
+		flagSet.StringSliceVarP(&options.FingerOptions.FingerFile, "finger-file", "f", nil, "list of finger or finger directory to run (comma-separated, file)", goflags.NormalizedStringSliceOptions),
+		flagSet.BoolVarP(&options.Active, "active", "a", false, "enable active finger path"),
+	)
+	// 杂项
+	flagSet.CreateGroup("misc", "MISC",
+		flagSet.BoolVar(&options.InitConfig, "init", false, "init config file"),
+		flagSet.BoolVar(&options.PrintPreset, "print", false, "print preset all preset config"),
+		flagSet.StringVarP(&options.Config, "config", "c", "", "path to the xfirefly configuration file"),
 	)
 
 	// 实例化操作
 	if err := flagSet.Parse(); err != nil {
-		return options, fmt.Errorf("无法解析标志: %s", err)
+		return options, fmt.Errorf("The flag cannot be parsed: %s", err)
 	}
 	// 验证必参数是否传入
 	if err := verifyOptions(options); err != nil {
@@ -46,21 +66,21 @@ func NewCmdOptions() (*types.CmdOptions, error) {
 }
 
 // verifyOptions 验证命令行选项
-func verifyOptions(opt *types.CmdOptions) error {
+func verifyOptions(opt *types.CmdOptionsType) error {
 	// 使用反射自动序列化命令行选项用于调试
 	//optionsStr := fmt.Sprintf("%+v", *opt)
 	//fmt.Println("命令行选项：", optionsStr)
 
 	// 验证目标输入
 	if len(opt.Target) == 0 && opt.TargetsFile == "" {
-		return fmt.Errorf("必须设置 `-url` 或 `-file` 参数指定扫描目标")
+		return fmt.Errorf("The `-u` or `-l` parameter must be set to specify the scanning target")
 	}
 
 	// 验证输出文件格式
 	if opt.Output != "" && !opt.JSONOutput { // 如果启用了JSON格式输出，则不检查文件扩展名
 		ext := strings.ToLower(filepath.Ext(opt.Output))
 		if ext != ".txt" && ext != ".csv" {
-			return fmt.Errorf("输出文件格式只支持 .txt 或 .csv，或者使用 -json 参数启用JSON格式输出")
+			return fmt.Errorf("The output file format only supports.txt or.csv, or the -json parameter can be used to enable JSON format output")
 		}
 	}
 
@@ -68,28 +88,28 @@ func verifyOptions(opt *types.CmdOptions) error {
 	if opt.SockOutput != "" {
 		ext := strings.ToLower(filepath.Ext(opt.SockOutput))
 		if ext != ".sock" {
-			return fmt.Errorf("socket输出文件必须使用.sock扩展名")
+			return fmt.Errorf("The socket output file must use the.sock extension")
 		}
 	}
 
 	// 验证线程数
 	if opt.Threads <= 0 {
-		fmt.Println("[-] 线程数无效，将使用默认值 10")
+		fmt.Println("[-] The number of threads is invalid and the default value of 5 will be used")
 		opt.Threads = 5
 	}
 
 	// 验证规则线程数
 	if opt.RuleThreads < 0 {
-		fmt.Println("[-] 规则线程数无效，将使用默认计算值")
+		fmt.Println("[-] The rule thread count is invalid and the default calculated value will be used")
 		opt.RuleThreads = 0
 	} else if opt.RuleThreads > 50000 {
-		fmt.Println("[-] 规则线程数过大，已限制为最大值 50000")
+		fmt.Println("[-] The number of rule threads is too large and has been limited to a maximum of 50,000")
 		opt.RuleThreads = 50000
 	}
 
 	// 验证超时时间
 	if opt.Timeout <= 0 {
-		fmt.Println("[-] 超时时间无效，将使用默认值 3 秒")
+		fmt.Println("[-] The timeout period is invalid and the default value of 3 seconds will be used")
 		opt.Timeout = 3
 	}
 
