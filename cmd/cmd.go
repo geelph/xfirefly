@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/jessevdk/go-flags"
+	"github.com/fatih/color"
+	"os"
 	"xfirefly/pkg/cli"
 )
 
@@ -19,22 +20,18 @@ func init() {
 //	@Description: 整个程序的入口
 func Execute() {
 	// 声明参数结构变量
-	var option cli.Option
-
-	// 命令行参数设计
-	parser := flags.NewParser(&option, flags.Default)
-
-	// 用法说明
-	parser.Usage = `
-
-`
-
-	// 参数解析,错误结束
-	_, err := parser.Parse()
+	options, err := cli.NewCmdOptions()
 	if err != nil {
-		if err.(*flags.Error).Type != flags.ErrHelp {
-			fmt.Println(err.Error())
-		}
-		return
+		// 在初始化logger之前的错误使用默认logger
+		color.Red(fmt.Sprintf("[ERROR] %s", err.Error()))
+		os.Exit(1)
 	}
+
+	// 配置日志级别
+	options.Debug = true
+
+}
+
+func DisplayBanner() {
+	cli.DisplayBanner()
 }

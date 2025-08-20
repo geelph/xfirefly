@@ -1,16 +1,14 @@
 package main
 
 import (
-	"github.com/gookit/color"
 	"xfirefly/cmd"
-	"xfirefly/pkg/cli"
 )
 
 func main() {
 
 	// 绿色方式打印 banner
-	//cmd.DisplayBanner()
-	color.Greenp(cli.Banner)
+	cmd.DisplayBanner()
+	//color.Greenp(cli.Banner)
 
 	// 程序核心入口函数
 	cmd.Execute()
