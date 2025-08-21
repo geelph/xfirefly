@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"xfirefly/pkg/cli"
+	"xfirefly/pkg/logger"
 )
 
 // init
@@ -23,7 +23,8 @@ func Execute() {
 	if err != nil {
 		// 在初始化logger之前的错误使用默认logger
 		//color.Red(fmt.Sprintf("[ERROR] %s", err.Error()))
-		fmt.Println(fmt.Sprintf("[ERROR] %s", err.Error()))
+		//fmt.Println(fmt.Sprintf("[ERROR] %s", err.Error()))
+		logger.Logger.Error(err.Error())
 		os.Exit(1)
 	}
 
@@ -32,6 +33,9 @@ func Execute() {
 
 }
 
+// DisplayBanner
+//
+//	@Description: 打印 banner 信息
 func DisplayBanner() {
 	cli.DisplayBanner()
 }

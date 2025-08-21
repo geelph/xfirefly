@@ -2,7 +2,10 @@ module xfirefly
 
 go 1.25.0
 
-require github.com/projectdiscovery/goflags v0.1.74
+require (
+	github.com/fatih/color v1.15.0
+	github.com/projectdiscovery/goflags v0.1.74
+)
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -10,6 +13,7 @@ require (
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/miekg/dns v1.1.56 // indirect
