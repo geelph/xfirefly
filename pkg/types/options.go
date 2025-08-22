@@ -30,4 +30,5 @@ type CmdOptionsType struct {
 	InitConfig    bool                // 初始化配置文件
 	PrintPreset   bool                // 打印预配置
 	Config        string              // 指定配置文件
+	Version       bool                // 打印版本信息
 }

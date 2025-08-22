@@ -51,6 +51,7 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 		flagSet.BoolVar(&options.InitConfig, "init", false, "init config file"),
 		flagSet.BoolVar(&options.PrintPreset, "print", false, "print preset all preset config"),
 		flagSet.StringVarP(&options.Config, "config", "c", "", "path to the xfirefly configuration file"),
+		flagSet.BoolVarP(&options.Version, "version", "v", false, "print version and exit"),
 	)
 
 	// 实例化操作
@@ -70,6 +71,10 @@ func verifyOptions(opt *types.CmdOptionsType) error {
 	// 使用反射自动序列化命令行选项用于调试
 	//optionsStr := fmt.Sprintf("%+v", *opt)
 	//fmt.Println("命令行选项：", optionsStr)
+	// 验证版本输入、初始化配置、打印内置配置参数
+	if opt.Version || opt.InitConfig || opt.PrintPreset {
+		return nil
+	}
 
 	// 验证目标输入
 	if len(opt.Target) == 0 && opt.TargetsFile == "" {
