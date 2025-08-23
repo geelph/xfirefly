@@ -3,12 +3,9 @@ package cmd
 import (
 	"os"
 	"xfirefly/pkg/cli"
+	"xfirefly/pkg/utils/common"
 
 	"github.com/donnie4w/go-logger/logger"
-)
-
-var (
-	xenv = "prod" // 环境标识，控制日志输出，{dev | prod}
 )
 
 // init
@@ -19,7 +16,7 @@ func init() {
 	// 日志格式初始化
 	logger.SetFormat(logger.FORMAT_TIME | logger.FORMAT_LEVELFLAG | logger.FORMAT_SHORTFILENAME)
 	logger.SetFormatter("[{time}] {level} {message} [{file}]\n")
-	logger.SetLevel(logger.LEVEL_INFO)
+	logger.SetLevel(common.LogLevel)
 
 }
 
@@ -47,11 +44,32 @@ func Execute() {
 		os.Exit(0)
 	}
 
+	// 日志时间戳设置
+	if options.NoTimestamp {
+		logger.SetFormat(logger.FORMAT_LEVELFLAG | logger.FORMAT_SHORTFILENAME)
+		logger.SetFormatter("{level} {message} [{file}]\n")
+	}
+
 	// 配置日志级别
 	if options.Debug {
 		logger.SetLevel(logger.LEVEL_DEBUG)
-		logger.Debug("设置日志级别为：DEBUG")
+		common.LogLevel = logger.LEVEL_DEBUG
+		logger.Debug("DEBUG 模式已开启")
 	}
+
+	// 日志文件
+	if options.FileLog {
+		// 日志写入文件
+		logger.SetOption(&logger.Option{
+			Level:      common.LogLevel,
+			Console:    true,
+			FileOption: &logger.FileTimeMode{Filename: "logs/app.log", Maxbuckup: 10, IsCompress: true, Timemode: logger.MODE_MONTH},
+		})
+		logger.Debug("文件日志记录功能已开启")
+	}
+
+	logger.Debug("日志文件写入测试")
+	logger.Info("this is a info message")
 
 }
 
@@ -60,4 +78,8 @@ func Execute() {
 //	@Description: 打印 banner 信息
 func DisplayBanner() {
 	cli.DisplayBanner()
+}
+
+func initLogConfig() {
+
 }

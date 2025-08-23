@@ -38,7 +38,7 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 	// 日志管理
 	flagSet.CreateGroup("debug", "DEBUG",
 		flagSet.BoolVar(&options.Debug, "debug", false, "show verbose output"),
-		flagSet.BoolVar(&options.Timestamp, "timestamp", false, "Output with timestamp"),
+		flagSet.BoolVarP(&options.NoTimestamp, "no-timestamp", "ntp", false, "Output without timestamp"),
 		flagSet.BoolVar(&options.FileLog, "file-log", false, "Output the log to file"),
 	)
 	// 指纹参数

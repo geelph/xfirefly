@@ -23,7 +23,7 @@ type CmdOptionsType struct {
 	Retries       int                 // 重试次数，默认1次
 	MaxRedirects  int                 // 最大跳转次数，默认5次
 	Debug         bool                // 设置debug模式
-	Timestamp     bool                // 输出时间戳
+	NoTimestamp   bool                // 输出时间戳
 	FileLog       bool                // 是否禁用文件日志，仅输出到控制台
 	FingerOptions YamlFingerType      // Finger yaml文件配置
 	Active        bool                // 主动指纹探测
