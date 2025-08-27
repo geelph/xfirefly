@@ -6,7 +6,8 @@ import (
 
 // YamlFingerType 指纹文件类型
 type YamlFingerType struct {
-	FingerFile goflags.StringSlice // 单个指纹文件
+	FingerPath string              // POC文件路径
+	FingerYaml goflags.StringSlice // 单个POC yaml文件
 }
 
 // CmdOptionsType 命令行选项结构体

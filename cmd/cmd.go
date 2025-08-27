@@ -3,6 +3,8 @@ package cmd
 import (
 	"os"
 	"xfirefly/pkg/cli"
+	"xfirefly/pkg/runner"
+	"xfirefly/pkg/types"
 	"xfirefly/pkg/utils/common"
 
 	"github.com/donnie4w/go-logger/logger"
@@ -68,8 +70,14 @@ func Execute() {
 		logger.Debug("文件日志记录功能已开启")
 	}
 
-	logger.Debug("日志文件写入测试")
-	logger.Info("this is a info message")
+	// 输出文件设置
+	// 确定输出文件格式
+	// 初始化输出文件
+	// 初始化socket文件输出（如果启用）
+	// 延时匿名函数，关闭所有输出资源
+
+	// 运行核心程序
+	run(options)
 
 }
 
@@ -82,4 +90,18 @@ func DisplayBanner() {
 
 func initLogConfig() {
 
+}
+
+func run(options *types.CmdOptionsType) {
+	// 开启内存监控
+	runner.StartMemoryMonitor()
+	// 停止内存监控，延时调用，后进先出
+	defer runner.StopMemoryMonitor()
+	// 声明一个新的Runner
+	r := runner.NewRunner(options)
+	// 运行扫描
+	if err := r.Run(options); err != nil {
+		// 错误已在Run函数内部记录，这里无需额外处理
+		return
+	}
 }

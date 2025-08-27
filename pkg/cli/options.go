@@ -43,7 +43,8 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 	)
 	// 指纹参数
 	flagSet.CreateGroup("finger", "FINGER",
-		flagSet.StringSliceVarP(&options.FingerOptions.FingerFile, "finger-file", "f", nil, "list of finger or finger directory to run (comma-separated, file)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.FingerOptions.FingerYaml, "finger-file", "f", nil, "list of finger to run (comma-separated, file)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringVarP(&options.FingerOptions.FingerPath, "finger-path", "fp", "", "finger directory to run"),
 		flagSet.BoolVarP(&options.Active, "active", "a", false, "enable active finger path"),
 	)
 	// 杂项

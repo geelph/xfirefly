@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	// 绿色方式打印 banner
+	// 打印 banner
 	cmd.DisplayBanner()
 	//color.Greenp(cli.Banner)
 
