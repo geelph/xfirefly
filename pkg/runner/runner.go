@@ -80,6 +80,7 @@ func NewRunner(options *types.CmdOptionsType) *Runner {
 
 // Run 执行扫描
 func (r *Runner) Run(options *types.CmdOptionsType) error {
+
 	// 检查扫描器是否已经运行
 	if !r.isRunning.CompareAndSwap(false, true) {
 		return fmt.Errorf("扫描器已在运行中")
@@ -88,10 +89,14 @@ func (r *Runner) Run(options *types.CmdOptionsType) error {
 	defer r.isRunning.Store(false)
 
 	// 处理目标URL列表
-	targets := getTargets(options)
-	// 检测目标有效数
-	if len(targets) == 0 {
-		return fmt.Errorf("未找到有效的目标URL")
+	targets, err := getTargets(options)
+	if err == nil {
+		// 检测目标有效数
+		if len(targets) == 0 {
+			return fmt.Errorf("未找到有效的目标URL")
+		}
+	} else {
+		return err
 	}
 
 	// 打印扫描目标数
@@ -102,6 +107,7 @@ func (r *Runner) Run(options *types.CmdOptionsType) error {
 		if err := output.InitOutput(r.Config.OutputFile, r.Config.OutputFormat); err != nil {
 			return fmt.Errorf("初始化输出文件失败: %v", err)
 		}
+		logger.Info(fmt.Sprintf("日志输出文件：%s", r.Config.OutputFile))
 		defer func() {
 			_ = output.Close()
 		}()
@@ -221,7 +227,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 	}()
 
 	// 启动进度条更新协程
-	startTime := time.Now()
+	//startTime := time.Now()
 	go func() {
 		for range doneChan {
 			if err := bar.Add(1); err != nil {
@@ -341,12 +347,12 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 	}
 
 	// 显示扫描耗时信息
-	elapsedTime := time.Since(startTime)
-	itemsPerSecond := float64(len(targets)) / elapsedTime.Seconds()
+	//elapsedTime := time.Since(startTime)
+	//itemsPerSecond := float64(len(targets)) / elapsedTime.Seconds()
 
-	maxProgress := fmt.Sprintf("指纹识别 100%% [==================================================] (%d/%d, %.2f it/s)",
-		len(targets), len(targets), itemsPerSecond)
-	fmt.Println(maxProgress)
+	//maxProgress := fmt.Sprintf("指纹识别 100%% [==================================================] (%d/%d, %.2f it/s)",
+	//	len(targets), len(targets), itemsPerSecond)
+	//fmt.Println(maxProgress)
 
 	// 打印池统计信息
 	stats := GetRulePoolStats()

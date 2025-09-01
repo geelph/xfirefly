@@ -6,6 +6,7 @@ import (
 	"strings"
 	"xfirefly/pkg/types"
 
+	"github.com/donnie4w/go-logger/logger"
 	"github.com/projectdiscovery/goflags"
 )
 
@@ -31,9 +32,9 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 		flagSet.StringVarP(&options.Proxy, "proxy", "p", "", "string of http/socks5 proxy to use"),
 		flagSet.IntVarP(&options.Threads, "threads", "t", 5, "maximum number of requests to send per second"),
 		flagSet.IntVarP(&options.RuleThreads, "rulethreads", "rt", 200, "maximum number of fingers to send per second"),
-		flagSet.IntVar(&options.Timeout, "timeout", 3, "time to wait in seconds before timeout (default 3)"),
-		flagSet.IntVar(&options.Retries, "retrise", 1, "number of times to retry a failed request (default 1)"),
-		flagSet.IntVar(&options.MaxRedirects, "max-redirects", 5, "max number of redirects to follow for http templates (default 5)"),
+		flagSet.IntVar(&options.Timeout, "timeout", 3, "time to wait in seconds before timeout"),
+		flagSet.IntVar(&options.Retries, "retrise", 1, "number of times to retry a failed request"),
+		flagSet.IntVar(&options.MaxRedirects, "max-redirects", 5, "max number of redirects to follow for http templates"),
 	)
 	// 日志管理
 	flagSet.CreateGroup("debug", "DEBUG",
@@ -57,7 +58,9 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 
 	// 实例化操作
 	if err := flagSet.Parse(); err != nil {
-		return options, fmt.Errorf("The flag cannot be parsed: %s", err)
+		// 内部处理，程序会异常退出，运行不到这里
+		//return options, fmt.Errorf("The flag cannot be parsed: %s", err)
+		return options, err
 	}
 	// 验证必参数是否传入
 	if err := verifyOptions(options); err != nil {
@@ -79,14 +82,14 @@ func verifyOptions(opt *types.CmdOptionsType) error {
 
 	// 验证目标输入
 	if len(opt.Target) == 0 && opt.TargetsFile == "" {
-		return fmt.Errorf("The `-u` or `-l` parameter must be set to specify the scanning target")
+		return fmt.Errorf("必须使用`-u`或`-l`参数指定扫描目标")
 	}
 
 	// 验证输出文件格式
 	if opt.Output != "" && !opt.JSONOutput { // 如果启用了JSON格式输出，则不检查文件扩展名
 		ext := strings.ToLower(filepath.Ext(opt.Output))
 		if ext != ".txt" && ext != ".csv" {
-			return fmt.Errorf("The output file format only supports.txt or.csv, or the -json parameter can be used to enable JSON format output")
+			return fmt.Errorf("输出文件格式仅支持.txt或.csv，也可以使用-json参数启用JSON格式输出")
 		}
 	}
 
@@ -94,29 +97,41 @@ func verifyOptions(opt *types.CmdOptionsType) error {
 	if opt.SockOutput != "" {
 		ext := strings.ToLower(filepath.Ext(opt.SockOutput))
 		if ext != ".sock" {
-			return fmt.Errorf("The socket output file must use the.sock extension")
+			return fmt.Errorf("socket输出文件扩展名必须是.sock")
 		}
 	}
 
 	// 验证线程数
 	if opt.Threads <= 0 {
-		fmt.Println("[-] The number of threads is invalid and the default value of 5 will be used")
+		logger.Warn("指定线程数无效，将使用默认值5")
 		opt.Threads = 5
 	}
 
 	// 验证规则线程数
 	if opt.RuleThreads < 0 {
-		fmt.Println("[-] The rule thread count is invalid and the default calculated value will be used")
-		opt.RuleThreads = 0
+		logger.Warn("指定规则线程数无效，将使用默认值200")
+		opt.RuleThreads = 200
 	} else if opt.RuleThreads > 50000 {
-		fmt.Println("[-] The number of rule threads is too large and has been limited to a maximum of 50,000")
+		logger.Warn("指定规则线程数太大，将使用最大值50000")
 		opt.RuleThreads = 50000
 	}
 
 	// 验证超时时间
 	if opt.Timeout <= 0 {
-		fmt.Println("[-] The timeout period is invalid and the default value of 3 seconds will be used")
+		logger.Warn("指定超时时间不合法，将使用默认值3秒")
 		opt.Timeout = 3
+	}
+
+	// 重试次数
+	if opt.Retries < 0 {
+		logger.Warn("指定重试次数不合法，将使用默认值1")
+		opt.Retries = 1
+	}
+
+	// 最大跳转次数
+	if opt.MaxRedirects < 0 {
+		logger.Warn("指定最大跳转次数不合法，将使用默认值5")
+		opt.MaxRedirects = 5
 	}
 
 	return nil

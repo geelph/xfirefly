@@ -98,7 +98,7 @@ func initGlobalClient() {
 func NewRequestHttp(urlStr string, options OptionsRequest) (*http.Response, error) {
 	setDefaults(&options)
 	if options.Proxy != "" {
-		logger.Debug(fmt.Sprintf("使用代理：%s", options.Proxy))
+		logger.Debugf("使用代理：%s", options.Proxy)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout)

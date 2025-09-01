@@ -220,6 +220,7 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 	}
 	// 处理响应的raw，传入代理参数
 	protoResp := buildProtoResponse(resp, utf8RespBody, milliseconds, proxy)
+	// 回显请求头信息
 	variableMap["response"] = protoResp
 	return variableMap, nil
 }

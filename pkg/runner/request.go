@@ -114,7 +114,7 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 	// 读取响应体一次并保存，后续复用（限制大小，避免大包体导致内存暴涨）
 	data, err := io.ReadAll(io.LimitReader(resp.Body, network.MaxDefaultBody))
 	if err != nil {
-		logger.Debug(fmt.Sprintf("读取响应体出错: %v", err))
+		logger.Debugf("读取响应体出错: %v", err)
 		data = []byte{}
 	}
 	// 重置响应体以供后续使用
@@ -133,7 +133,7 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 		}, nil
 	}
 
-	logger.Debug(fmt.Sprintf("当前站点使用技术：%s", wappData))
+	logger.Debugf("当前站点使用技术：%s", wappData)
 
 	return &BaseInfoResponse{
 		Url:        target,

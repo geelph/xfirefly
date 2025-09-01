@@ -2,13 +2,15 @@ package output
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/schollz/progressbar/v3"
 	"os"
 	"path/filepath"
 	"strings"
 	"xfirefly/pkg/finger"
 	"xfirefly/pkg/utils/proto"
+
+	"github.com/donnie4w/go-logger/logger"
+	"github.com/fatih/color"
+	"github.com/schollz/progressbar/v3"
 )
 
 // CreateProgressBar 创建进度条
@@ -66,8 +68,10 @@ func PrintSummary(targets []string, results map[string]*TargetResult) {
 	}
 
 	// 输出统计信息
-	fmt.Println(color.CyanString("─────────────────────────────────────────────────────"))
-	fmt.Printf("扫描统计: 目标总数 %d, 匹配成功 %d, 匹配失败 %d\n",
+	//logger.Info(color.CyanString("─────────────────────────────────────────────────────"))
+	//fmt.Printf("扫描统计: 目标总数 %d, 匹配成功 %d, 匹配失败 %d\n",
+	//len(targets), matchCount, noMatchCount)
+	logger.Infof("扫描统计: 目标总数 %d, 匹配成功 %d, 匹配失败 %d",
 		len(targets), matchCount, noMatchCount)
 }
 
@@ -121,9 +125,9 @@ func HandleMatchResults(targetResult *TargetResult, output string, sockOutput st
 	// 根据匹配结果构建完整输出信息
 	var outputMsg string
 	var matchResultStr string
-	var successColor = "\033[32m" // 绿色
-	var failColor = "\033[31m"    // 红色
-	var resetColor = "\033[0m"    // 重置颜色
+	//var successColor = "\033[32m" // 绿色
+	//var failColor = "\033[31m"    // 红色
+	//var resetColor = "\033[0m"    // 重置颜色
 
 	if len(targetResult.Matches) > 0 {
 		// 收集所有匹配的指纹名称
@@ -131,10 +135,10 @@ func HandleMatchResults(targetResult *TargetResult, output string, sockOutput st
 		for _, match := range targetResult.Matches {
 			fingerNames = append(fingerNames, match.Finger.Info.Name)
 		}
-		matchResultStr = fmt.Sprintf("  指纹：[%s]  匹配结果：%s%s%s",
-			strings.Join(fingerNames, "，"), successColor, "成功", resetColor)
+		matchResultStr = fmt.Sprintf("  指纹：[%s]  匹配结果：%s",
+			color.MagentaString(strings.Join(fingerNames, "，")), color.GreenString("成功"))
 	} else {
-		matchResultStr = fmt.Sprintf("  匹配结果：%s%s%s", failColor, "未匹配", resetColor)
+		matchResultStr = fmt.Sprintf("  匹配结果：%s", color.BlueString("未匹配"))
 	}
 
 	// 组合最终输出信息，技术栈在一行，匹配结果放在末尾

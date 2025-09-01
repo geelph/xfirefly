@@ -1,10 +1,3 @@
-/*
-  - Package cel
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: cel.go
-    @Date: 2025/2/7 上午8:57*
-*/
 package cel
 
 import (

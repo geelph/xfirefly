@@ -111,7 +111,7 @@ func (g *GetIconHash) hashHTTPURL(iconURL string) int32 {
 	// 发送请求
 	resp, err := network.SendRequestHttp(ctx, "GET", iconURL, "", options)
 	if err != nil {
-		logger.Debug(fmt.Sprintf("创建请求失败: %s", err))
+		logger.Debugf("创建请求失败: %s", err)
 		return 0
 	}
 
@@ -120,7 +120,7 @@ func (g *GetIconHash) hashHTTPURL(iconURL string) int32 {
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err = io.ReadAll(io.LimitReader(resp.Body, network.MaxDefaultBody))
 		if err != nil {
-			logger.Debug(fmt.Sprintf("读取响应体失败: %s", err))
+			logger.Debugf("读取响应体失败: %s", err)
 			return 0
 		}
 		defer func() { _ = resp.Body.Close() }()
@@ -132,7 +132,7 @@ func (g *GetIconHash) hashHTTPURL(iconURL string) int32 {
 
 		if len(bodyBytes) > 0 {
 			bodyHex := fmt.Sprintf("%x", bodyBytes[:8])
-			logger.Debug(fmt.Sprintf("响应头前8个字节: %s", bodyHex))
+			logger.Debugf("响应头前8个字节: %s", bodyHex)
 			for _, fh := range g.fileHeader {
 				if strings.HasPrefix(bodyHex, strings.ToLower(fh)) {
 					return Mmh3Hash32(StandBase64(bodyBytes))

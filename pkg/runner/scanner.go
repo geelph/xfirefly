@@ -15,25 +15,29 @@ import (
 )
 
 // getTargets 从命令行参数或文件中读取目标，并进行去重处理
-func getTargets(options *types.CmdOptionsType) []string {
+func getTargets(options *types.CmdOptionsType) ([]string, error) {
 	// 优先使用命令行直接指定的目标
 	if len(options.Target) > 0 {
+		// 记录原始目标数
 		originalCount := len(options.Target)
+		// 移除重复目标
 		targets := common.RemoveDuplicateURLs(options.Target)
+		// 计算重复目标数
 		duplicateCount := originalCount - len(targets)
 		logger.Info(fmt.Sprintf("原始目标数量：%v个，重复目标数量：%v个，去重后目标数量：%v个", originalCount, duplicateCount, len(targets)))
-		return targets
+		return targets, nil
 	}
 
 	// 其次从文件读取（流式扫描，内存占用更低）
 	if options.TargetsFile == "" {
-		return nil
+		return nil, fmt.Errorf("目标文件为空")
 	}
 
+	// 读取文件内容
 	file, err := os.Open(options.TargetsFile)
 	if err != nil {
-		logger.Error(fmt.Sprintf("读取目标文件失败: %v", err))
-		return nil
+		//logger.Error(fmt.Sprintf("读取目标文件失败: %v", err))
+		return nil, fmt.Errorf("读取目标文件失败: %v", err)
 	}
 	defer func() { _ = file.Close() }()
 
@@ -45,10 +49,13 @@ func getTargets(options *types.CmdOptionsType) []string {
 	unique := make(map[string]struct{}, 1024)
 	totalLines := 0
 	for scanner.Scan() {
+		// 移除字符串前后空白字符
 		line := strings.TrimSpace(scanner.Text())
+		// 空行处理
 		if line == "" {
 			continue
 		}
+		// 计数
 		totalLines++
 		if _, ok := unique[line]; !ok {
 			unique[line] = struct{}{}
@@ -62,10 +69,11 @@ func getTargets(options *types.CmdOptionsType) []string {
 	for t := range unique {
 		targets = append(targets, t)
 	}
+	// 计算重复目标数量
 	duplicateCount := totalLines - len(targets)
 	logger.Info(fmt.Sprintf("原始目标数量：%v个，重复目标数量：%v个，去重后目标数量：%v个", totalLines, duplicateCount, len(targets)))
 
-	return targets
+	return targets, nil
 }
 
 // ProcessURL 处理单个URL的所有指纹识别，获取目标基础信息并执行指纹识别

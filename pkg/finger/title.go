@@ -25,7 +25,7 @@ func GetTitle(urlStr string, resp *http.Response) string {
 	// 读取响应体
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Debug("读取响应体出错: %v", err)
+		logger.Debugf("读取响应体出错: %v", err)
 		return ""
 	}
 	// 不要忘记恢复响应体以便后续使用
@@ -50,12 +50,12 @@ func GetTitle(urlStr string, resp *http.Response) string {
 	// 根据检测到的字符集进行转换
 	if len(charsetMatch) >= 2 {
 		charset := strings.ToLower(charsetMatch[1])
-		logger.Debug("检测到字符集: %s", charset)
+		logger.Debugf("检测到字符集: %s", charset)
 
 		if charset != "utf-8" && charset != "utf8" {
 			// 使用 common.Str2UTF8 函数转换为 UTF-8
 			bodyText = common.Str2UTF8(bodyText)
-			logger.Debug("已将内容从 %s 转换为 UTF-8", charset)
+			logger.Debugf("已将内容从 %s 转换为 UTF-8", charset)
 		}
 	} else {
 		// 如果无法检测到字符集，尝试转换为 UTF-8
@@ -65,7 +65,7 @@ func GetTitle(urlStr string, resp *http.Response) string {
 	// 解析URL
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
-		logger.Debug("解析URL出错: %v", err)
+		logger.Debugf("解析URL出错: %v", err)
 		return ""
 	}
 
@@ -81,14 +81,14 @@ func GetTitle(urlStr string, resp *http.Response) string {
 	titleMatches := titleRegex.FindStringSubmatch(bodyText)
 	if len(titleMatches) > 1 {
 		title = cleanTitle(titleMatches[1])
-		logger.Debug("通过正则表达式识别到标题: %s", title)
+		logger.Debugf("通过正则表达式识别到标题: %s", title)
 	}
 
 	// 在JavaScript中查找document.title
 	domTitleRegex := regexp.MustCompile(`(?i)document\.title.*?=.*?\((.*?)\)`)
 	domTitleMatches := domTitleRegex.FindStringSubmatch(bodyText)
 	if len(domTitleMatches) > 1 {
-		logger.Debug("识别到DOM渲染的标题: %s", domTitleMatches[1])
+		logger.Debugf("识别到DOM渲染的标题: %s", domTitleMatches[1])
 		domTitle := strings.ReplaceAll(domTitleMatches[1], "\"", "")
 
 		invalidTitles := []string{"title", ".title", "top.", ".login", "=", "||", "''", "null"}
@@ -143,7 +143,7 @@ func GetTitle(urlStr string, resp *http.Response) string {
 
 			req, err := http.NewRequest("GET", titleURL, nil)
 			if err != nil {
-				logger.Debug("创建请求出错: %v", err)
+				logger.Debugf("创建请求出错: %v", err)
 				break
 			}
 
@@ -154,7 +154,7 @@ func GetTitle(urlStr string, resp *http.Response) string {
 
 			respTitle, err := client.Do(req)
 			if err != nil {
-				logger.Debug("获取i18n JS文件出错: %v", err)
+				logger.Debugf("获取i18n JS文件出错: %v", err)
 				continue
 			}
 
@@ -162,7 +162,7 @@ func GetTitle(urlStr string, resp *http.Response) string {
 				bodyBytes, err := io.ReadAll(respTitle.Body)
 				_ = respTitle.Body.Close()
 				if err != nil {
-					logger.Debug("读取i18n JS响应出错: %v", err)
+					logger.Debugf("读取i18n JS响应出错: %v", err)
 					continue
 				}
 
@@ -172,9 +172,9 @@ func GetTitle(urlStr string, resp *http.Response) string {
 				titleRegex := regexp.MustCompile(`"top\.login\.title": "(.*?)",`)
 				titleMatches := titleRegex.FindStringSubmatch(jsContent)
 				if len(titleMatches) > 1 {
-					logger.Debug("成功从i18n JS文件获取标题数据: %s", titleMatches[1])
+					logger.Debugf("成功从i18n JS文件获取标题数据: %s", titleMatches[1])
 					title = titleMatches[1]
-					logger.Debug("找到新标题，替换原始标题: %s", title)
+					logger.Debugf("找到新标题，替换原始标题: %s", title)
 				}
 			}
 			break

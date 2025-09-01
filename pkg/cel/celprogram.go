@@ -1,10 +1,3 @@
-/*
-  - Package cel
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: celprogram.go
-    @Date: 2025/2/7 上午9:22*
-*/
 package cel
 
 import (
@@ -39,11 +32,11 @@ var FunctionEnvOptions = []cel.EnvOption{
 			cel.BinaryBinding(func(lhs ref.Val, rhs ref.Val) ref.Val {
 				v1, ok := lhs.(types.String)
 				if !ok {
-					return types.ValOrErr(lhs, "unexpected type '%v' passed to contains", lhs.Type())
+					return types.ValOrErr(lhs, "unexpected type '%v' passed to icontains", lhs.Type())
 				}
 				v2, ok := rhs.(types.String)
 				if !ok {
-					return types.ValOrErr(rhs, "unexpected type '%v' passed to contains", rhs.Type())
+					return types.ValOrErr(rhs, "unexpected type '%v' passed to icontains", rhs.Type())
 				}
 				return types.Bool(strings.Contains(strings.ToLower(string(v1)), strings.ToLower(string(v2))))
 			}),
@@ -165,11 +158,11 @@ var FunctionEnvOptions = []cel.EnvOption{
 			cel.BinaryBinding(func(lhs ref.Val, rhs ref.Val) ref.Val {
 				v1, ok := lhs.(types.Bytes)
 				if !ok {
-					return types.ValOrErr(lhs, "unexpected type '%v' passed to bcontains", lhs.Type())
+					return types.ValOrErr(lhs, "unexpected type '%v' passed to ibcontains", lhs.Type())
 				}
 				v2, ok := rhs.(types.Bytes)
 				if !ok {
-					return types.ValOrErr(rhs, "unexpected type '%v' passed to bcontains", rhs.Type())
+					return types.ValOrErr(rhs, "unexpected type '%v' passed to ibcontains", rhs.Type())
 				}
 				return types.Bool(bytes.Contains(bytes.ToLower(v1), bytes.ToLower(v2)))
 			}),

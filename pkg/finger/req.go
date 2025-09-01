@@ -93,9 +93,9 @@ func buildProtoResponse(resp *http.Response, utf8RespBody string, latency int64,
 		ct := resp.Header.Get("Content-Type")
 		if (path == "" || path == "/") && strings.Contains(strings.ToLower(ct), "text/html") {
 			iconUrl := GetIconURL(resp.Request.URL.String(), utf8RespBody)
-			logger.Debug(fmt.Sprintf("提取到iconUrl为: %s", iconUrl))
+			logger.Debugf("提取到iconUrl为: %s", iconUrl)
 			iconHashStr = NewGetIconHash(iconUrl, proxy).Run()
-			logger.Debug(fmt.Sprintf("icon hash：%s", iconHashStr))
+			logger.Debugf("icon hash：%s", iconHashStr)
 		}
 	}
 	return &proto.Response{

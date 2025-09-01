@@ -45,7 +45,7 @@ func LoadFingerprints(options types.YamlFingerType) error {
 
 	// 使用嵌入式指纹库
 	if len(options.FingerYaml) == 0 && options.FingerPath == "" {
-		logger.Info("使用默认指纹库")
+		logger.Info("未指定指纹选项，将使用内置指纹库")
 		// 获取指纹规则
 		fin, err := utils.GetFingerYaml()
 		if err != nil {
@@ -57,7 +57,7 @@ func LoadFingerprints(options types.YamlFingerType) error {
 
 	// 从目录加载指纹文件
 	if options.FingerPath != "" {
-		logger.Info(fmt.Sprintf("加载yaml文件目录：%s", options.FingerPath))
+		logger.Infof("正在加载 %s 目录下的指纹文件", options.FingerPath)
 
 		return filepath.WalkDir(options.FingerPath, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
@@ -74,16 +74,16 @@ func LoadFingerprints(options types.YamlFingerType) error {
 
 	// 加载单个指纹文件
 	if len(options.FingerYaml) != 0 {
-		logger.Info(fmt.Sprintf("加载yaml文件：%s", options.FingerYaml))
+		logger.Infof("正在加载指纹文件：%s", options.FingerYaml)
 
 		for _, fyaml := range options.FingerYaml {
 			if !common.IsYamlFile(fyaml) {
-				return fmt.Errorf("%s 不是有效的yaml文件", fyaml)
+				return fmt.Errorf("%s 不是有效的yaml指纹文件", fyaml)
 			}
 
 			poc, err := finger.Read(fyaml)
 			if err != nil {
-				return fmt.Errorf("读取yaml文件出错: %v", err)
+				return fmt.Errorf("读取yaml指纹文件出错: %v", err)
 			}
 
 			if poc != nil {
@@ -147,12 +147,26 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 
 		// 主动指纹识别规则区分，优化发包数量，通过参数控制主动发包行为
 		if !fingerActive {
+			// 判断rule-path非空且值不是/
 			if rule.Value.Request.Path != "" && rule.Value.Request.Path != "/" {
-				logger.Info("主动发包的规则键为：%s", rule.Key)
-				logger.Info("主动发包的路径为：%s", rule.Value.Request.Path)
+				//logger.Debug("主动发包的规则键为：", rule.Key)
+				logger.Debug("发现主动指纹识别规则路径为：", rule.Value.Request.Path, " 已跳过")
 				customLib.WriteRuleFunctionsROptions(rule.Key, false)
 				continue
 			}
+			// 判断请求方法不是GET
+			if rule.Value.Request.Method != "GET" {
+				logger.Debug("发现非默认请求方法：", rule.Value.Request.Method, " 已跳过")
+				customLib.WriteRuleFunctionsROptions(rule.Key, false)
+				continue
+			}
+			// 判断请求头
+			if len(rule.Value.Request.Headers) != 0 {
+				logger.Debug("发现非默认请求头", rule.Value.Request.Headers, " 已跳过")
+				customLib.WriteRuleFunctionsROptions(rule.Key, false)
+				continue
+			}
+
 		}
 		// 检查是否可以使用缓存
 		isCache, cache := ShouldUseCache(rule, urlStr)
@@ -195,17 +209,23 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 				raw = raw[:maxDump]
 			}
 			logger.Debug(fmt.Sprintf("响应数据包(截断)：\n%s", raw))
+			//// 获取请求头键信息
+			//logger.Errorf("目前获取到的响应头类型：%v", reflect.TypeOf(resp.Headers))
+			//logger.Errorf("目前获取到的响应头信息为：%v", resp.Headers["server"])
+			//for k, v := range resp.Headers {
+			//	logger.Errorf("键为：%v，值为：%v", k, v)
+			//}
 		}
 		logger.Debug("开始CEL表达式匹配")
 
 		// 执行规则评估
 		result, err := customLib.Evaluate(rule.Value.Expression, varMap)
 		if err != nil {
-			logger.Debug(fmt.Sprintf("规则 %s CEL解析错误：%s", rule.Key, err.Error()))
+			logger.Debugf("规则 %s CEL解析错误：%s", rule.Key, err.Error())
 			customLib.WriteRuleFunctionsROptions(rule.Key, false)
 		} else {
 			ruleBool := result.Value().(bool)
-			logger.Debug(fmt.Sprintf("规则 %s 评估结果: %v", rule.Value.Expression, ruleBool))
+			logger.Debugf("规则 %s 评估结果: %v", rule.Value.Expression, ruleBool)
 			customLib.WriteRuleFunctionsROptions(rule.Key, ruleBool)
 		}
 
@@ -233,7 +253,7 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 		}
 	}
 
-	logger.Debug(fmt.Sprintf("最终规则 %s 评估结果: %v", fg.Expression, resultData.Result))
+	logger.Debugf("最终规则 %s 评估结果: %v", fg.Expression, resultData.Result)
 
 	return resultData, nil
 }

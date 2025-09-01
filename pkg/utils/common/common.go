@@ -12,9 +12,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/axgle/mahonia"
-	"github.com/donnie4w/go-logger/logger"
-	"github.com/spaolacci/murmur3"
 	"math/big"
 	"math/rand"
 	"net"
@@ -24,6 +21,10 @@ import (
 	"time"
 	"unicode/utf8"
 	"xfirefly/pkg/utils/proto"
+
+	"github.com/axgle/mahonia"
+	"github.com/donnie4w/go-logger/logger"
+	"github.com/spaolacci/murmur3"
 )
 
 // AddressInfo 封装解析结果的结构体
@@ -50,6 +51,19 @@ const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+// 颜色常量
+const (
+	ColorReset  = "\033[0m"
+	ColorRed    = "\033[31m"
+	ColorGreen  = "\033[32m"
+	ColorYellow = "\033[33m"
+	ColorBlue   = "\033[34m"
+	ColorPurple = "\033[35m"
+	ColorCyan   = "\033[36m"
+	ColorWhite  = "\033[37m"
+	ColorBold   = "\033[1m"
 )
 
 // 全局变量
