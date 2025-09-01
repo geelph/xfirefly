@@ -1,17 +1,19 @@
-id: adminset-panel
+id: fingerprint-yaml-adminset-adminsetpanel
 info:
   name: Adminset
   author: zhizhuo
   verified: true
-  description: 'Converted from FOFA rule: adminset-panel'
+  description: 检测Adminset面板
   reference:
-    - https://example.com
-  tags: web,fofa,converted
+    - https://gitee.com/ivan_wh/adminset
+  matadata:
+    - fofa-query: 'product="AdminSet"'
+  tags: adminset,fofa
   created: 2025/04/07
 rules:
   r0:
     request:
       method: GET
       path: /
-    expression: response.body.ibcontains(b"<title>AdminSet Login</title>")
+    expression: response.status == 200 && response.body.ibcontains(b"<title>AdminSet Login</title>")
 expression: r0()
