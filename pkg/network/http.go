@@ -119,7 +119,7 @@ func NewRequestHttp(urlStr string, options OptionsRequest) (*http.Response, erro
 func SendRequestHttp(ctx context.Context, Method string, UrlStr string, Body string, options OptionsRequest) (*http.Response, error) {
 	setDefaults(&options)
 	if options.Proxy != "" {
-		logger.Debug(fmt.Sprintf("使用代理：%s", options.Proxy))
+		logger.Debugf("使用代理：%s", options.Proxy)
 	}
 	req, err := retryablehttp.NewRequestWithContext(ctx, Method, UrlStr, Body)
 	if err != nil {
@@ -139,7 +139,7 @@ func setDefaults(options *OptionsRequest) {
 	}
 
 	if options.Retries == 0 {
-		options.Retries = 3
+		options.Retries = 2
 	}
 
 	// 默认启用忽略TLS证书验证
@@ -235,7 +235,7 @@ func configureClient(options OptionsRequest) *retryablehttp.Client {
 	// 配置传输层
 	transport, err := createTransport(options.Proxy)
 	if err != nil {
-		logger.Error("创建传输层失败: %v", err)
+		logger.Errorf("创建传输层失败: %v", err)
 	} else {
 		client.HTTPClient.Transport = transport
 		client.HTTPClient2.Transport = transport

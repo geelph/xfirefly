@@ -140,7 +140,7 @@ func ShouldUseCache(rule finger.RuleMap, target string) (bool, CacheRequest) {
 	urlStr := common.RemoveTrailingSlash(target)
 	cacheKey := GenerateCacheKey(urlStr, method, rule.Value.Request.FollowRedirects)
 
-	logger.Debug(fmt.Sprintf("缓存提取key：%s %s %s %t", cacheKey, urlStr, method, rule.Value.Request.FollowRedirects))
+	logger.Debugf("缓存提取key：%s %s %s %t", cacheKey, urlStr, method, rule.Value.Request.FollowRedirects)
 
 	// 使用读锁访问缓存
 	globalCacheManager.mutex.RLock()

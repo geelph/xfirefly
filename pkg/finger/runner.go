@@ -51,7 +51,7 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 	if proxy != "" {
 		proxyURL, err := url.Parse(proxy)
 		if err != nil {
-			fmt.Println("代理地址解析失败:", err)
+			logger.Errorf("代理地址解析失败:%v", err)
 		} else {
 			options.Proxy = proxyURL.String()
 		}
@@ -178,18 +178,18 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 	// 处理协议，增加通信协议
 	NewUrlStr, err := network.CheckProtocol(urlStr, options.Proxy)
 	if err != nil {
-		logger.Debug(fmt.Sprintf("检查http通信协议出错，错误信息：%s", err))
+		logger.Debugf("检查http通信协议出错，错误信息：%s", err)
 		if !strings.HasPrefix(urlStr, "http://") && !strings.HasPrefix(urlStr, "https://") {
 			NewUrlStr = "http://" + target
 		}
 	}
 
-	logger.Debug(fmt.Sprintf("请求URL：%s", NewUrlStr))
+	logger.Debugf("请求URL：%s", NewUrlStr)
 
 	// 发送请求
 	resp, err := network.SendRequestHttp(ctx, req.Method, NewUrlStr, rule.Request.Body, options)
 	if err != nil {
-		logger.Debug(fmt.Sprintf("发送请求出错，错误信息：%s", err))
+		logger.Debugf("发送请求出错，错误信息：%s", err)
 		return variableMap, err
 	}
 	defer func(Body io.ReadCloser) {

@@ -1,0 +1,16 @@
+id: fingerprint-yaml-1caitong
+info:
+  name: 一采通
+  author: zhizhuo
+  verified: true
+  description: 识别特定Web应用
+  reference:
+    - http://www.1caitong.com/
+  created: 2025/04/15
+rules:
+  r0:
+    request:
+      method: GET
+      path: /
+    expression: response.status == 200 && response.body.ibcontains(b"/custom/groupnewslist.aspx?groupid=")
+expression: r0()
