@@ -34,3 +34,4 @@ go.work.sum
 # ignore directories
 bin/
 doc/
+pkg/**/*.yaml
