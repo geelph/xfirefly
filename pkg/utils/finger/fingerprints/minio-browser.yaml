@@ -1,0 +1,32 @@
+id: fingerprint-yaml-minio-browser
+info:
+  name: minio-browser
+  author: archer
+  verified: true
+  description: 检测到minio-browser系统或组件的特征
+  reference:
+    - https://minio.org.cn/
+  created: 2025/04/24
+rules:
+  r0:
+    request:
+      method: GET
+      path: /
+    expression: response.status == 200 && response.body.ibcontains(b"<title>MinIO Console</title>")
+  r1:
+    request:
+      method: GET
+      path: /
+    expression: |
+      response.icon_hash == "-625183107" || response.icon_hash == "721806371" || response.icon_hash == "1349047700" || response.icon_hash == "-114774331"
+  r2:
+    request:
+      method: GET
+      path: /minio/
+    expression: response.status == 200 && response.body.ibcontains(b"href=\"/minio/loader.css\"")
+  r3:
+    request:
+      method: GET
+      path: /
+    expression: response.status == 200 && response.body.ibcontains(b"<title>MinIO Browser</title>")
+expression: r0() || r1() || r2() || r3()
