@@ -45,6 +45,18 @@ func Execute() {
 		os.Exit(0)
 	}
 
+	// 初始化配置文件
+	if options.InitConfig {
+		logger.Info("正在初始化配置文件")
+		os.Exit(0)
+	}
+
+	// 打印所有内置配置
+	if options.PrintPreset {
+		logger.Info("正在打印内置配置信息")
+		os.Exit(0)
+	}
+
 	// 日志时间戳设置
 	if options.NoTimestamp {
 		logger.SetFormat(logger.FORMAT_LEVELFLAG | logger.FORMAT_SHORTFILENAME)
@@ -65,9 +77,9 @@ func Execute() {
 		logger.SetOption(&logger.Option{
 			Level:      common.LogLevel,
 			Console:    true,
-			FileOption: &logger.FileTimeMode{Filename: filename, Maxbuckup: 10, IsCompress: true, Timemode: logger.MODE_MONTH},
+			FileOption: &logger.FileTimeMode{Filename: filename, Maxbuckup: 10, IsCompress: true, Timemode: logger.MODE_HOUR},
 		})
-		logger.Debugf("文件日志记录功能已开启,文件位置:%s", filename)
+		logger.Debugf("文件日志记录功能已开启,日志文件位置:%s", filename)
 	}
 
 	// 代理选项配置
@@ -97,7 +109,7 @@ func Execute() {
 	// 运行结束时间
 	// 计算并打印运行时间
 	elapsedTime := time.Since(startTime)
-	logger.Infof("程序运行时间: %v", elapsedTime)
+	logger.Infof("程序运行时长: %v", elapsedTime)
 	// 或者格式化输出，例如只显示秒
 	//fmt.Printf("程序运行时间: %.2f 秒\n", elapsedTime.Seconds())
 }

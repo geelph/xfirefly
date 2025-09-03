@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: icon.go
-    @Date: 2025/2/21 下午3:06*
-*/
 package finger
 
 import (
@@ -62,6 +55,7 @@ func NewGetIconHash(iconURL string, proxy string, retries ...int) *GetIconHash {
 }
 
 // getDefaultIconURL 获取默认的icon URL
+// return: http://xxx.com/favicon.ico
 func (g *GetIconHash) getDefaultIconURL(iconURL string) string {
 	if iconURL == "" {
 		return ""
@@ -73,11 +67,22 @@ func (g *GetIconHash) getDefaultIconURL(iconURL string) string {
 	return fmt.Sprintf("%s://%s/favicon.ico", parsedURL.Scheme, parsedURL.Host)
 }
 
-// getIconHash 获取icon的hash值
+// getIconHash calculates the hash value of an icon based on its URL.
+// It handles both data URLs (base64 encoded images) and HTTP URLs.
+//
+// Parameters:
+//
+//	iconURL - the URL of the icon, either a data URL or HTTP URL
+//
+// Returns:
+//
+//	int32 - the calculated hash value of the icon
 func (g *GetIconHash) getIconHash(iconURL string) int32 {
+	// Check if the icon URL is a data URL (base64 encoded image)
 	if strings.HasPrefix(iconURL, "data:") {
 		return g.hashDataURL(iconURL)
 	}
+	// Handle HTTP URLs
 	return g.hashHTTPURL(iconURL)
 }
 

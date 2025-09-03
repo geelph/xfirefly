@@ -98,7 +98,7 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 		resp.Request.URL = newURL
 	}
 
-	// 获取站点技术信息
+	// 初始化wappalyzer对象
 	wapp, err := wappalyzer.NewWappalyzer()
 	if err != nil {
 		// 即使获取站点技术信息失败，仍然返回基本信息
@@ -120,7 +120,8 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 	// 重置响应体以供后续使用
 	resp.Body = io.NopCloser(bytes.NewReader(data))
 
-	wappData, err := wapp.GetWappalyzer(resp.Header, data)
+	// 调用wappalyzer分析站点使用的技术
+	wappData, err := wapp.Analyze(resp.Header, data)
 	if err != nil {
 		// 即使获取Wappalyzer数据失败，仍然返回基本信息
 		return &BaseInfoResponse{
@@ -134,6 +135,9 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 	}
 
 	logger.Debugf("当前站点使用技术：%s", wappData)
+	// output:
+	// &{[Apache Tomcat] [] [] [jQuery:1.10.2] [] [] [Java] [] [] [] []}
+	// &{[] [] [] [] [] [] [] [] [] [] []}
 
 	return &BaseInfoResponse{
 		Url:        target,

@@ -1,22 +1,16 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: eval.go
-    @Date: 2025/2/21 下午3:01*
-*/
 package finger
 
 import (
 	"fmt"
-	"github.com/google/cel-go/checker/decls"
-	"gopkg.in/yaml.v2"
 	"net/url"
 	"strings"
 	"xfirefly/pkg/cel"
 	"xfirefly/pkg/utils/common"
 	"xfirefly/pkg/utils/config"
 	"xfirefly/pkg/utils/proto"
+
+	"github.com/google/cel-go/checker/decls"
+	"gopkg.in/yaml.v2"
 
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )

@@ -1,10 +1,3 @@
-/*
-  - Package config
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: config.go
-    @Date: 2025/2/20 下午4:09*
-*/
 package config
 
 var (

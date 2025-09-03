@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: embed.go
-    @Date: 2025/3/10 下午4:37*
-*/
 package utils
 
 import (
@@ -13,32 +6,45 @@ import (
 	"io/fs"
 	finger2 "xfirefly/pkg/finger"
 	"xfirefly/pkg/utils/common"
+
+	"github.com/donnie4w/go-logger/logger"
 )
 
-//go:embed finger/*
+//go:embed fingerprint/*
 var EmbeddedFingerFS embed.FS
 var hasEmbeddedFingers bool
 
+// init 函数在包初始化时执行，用于检测和初始化嵌入的指纹库
+// 该函数会读取嵌入的指纹文件系统中的fingerprint目录，判断是否存在嵌入的指纹数据
+// 并设置全局变量hasEmbeddedFingers来标识是否使用嵌入指纹库
 func init() {
-	files, err := EmbeddedFingerFS.ReadDir("finger")
+	// 读取嵌入的指纹文件系统中fingerprint目录下的所有文件
+	files, err := EmbeddedFingerFS.ReadDir("fingerprint")
+
+	// 检查是否存在错误或者指纹目录为空的情况
 	if err != nil || len(files) == 0 {
 		hasEmbeddedFingers = false
-		fmt.Printf("提示: 未嵌入指纹库，将使用文件系统中的指纹库。错误信息：%v\n", err)
+		logger.Errorf("未嵌入指纹库，将使用文件系统中的指纹库。错误信息：%v", err)
+		// 单独处理指纹目录为空的情况
 		if len(files) == 0 {
-			fmt.Println("提示：指纹目录为空。")
+			logger.Warn("指纹目录为空")
 		}
 	} else {
+		// 成功读取到嵌入的指纹文件，设置标识为true
 		hasEmbeddedFingers = true
 	}
 }
 
+// GetFingerPath 获取指纹库路径
+// 返回值: string - 指纹库路径，如果使用嵌入的指纹库则返回"embedded://fingerprint/"，否则返回"fingerprint/"
 func GetFingerPath() string {
+	// 根据是否使用嵌入的指纹库来决定返回的路径
 	if hasEmbeddedFingers {
-		fmt.Println("使用嵌入的指纹库路径")
-		return "embedded://finger/"
+		logger.Info("使用嵌入的指纹库路径")
+		return "embedded://fingerprint/"
 	}
-	fmt.Println("使用文件系统中的指纹库路径")
-	return "finger/"
+	logger.Info("使用文件系统中的指纹库路径")
+	return "fingerprint/"
 }
 
 // GetFingerYaml 获取指纹yaml文件
@@ -46,7 +52,7 @@ func GetFingerYaml() ([]*finger2.Finger, error) {
 	var allFinger []*finger2.Finger
 
 	// 递归遍历所有目录查找yaml文件
-	err := fs.WalkDir(EmbeddedFingerFS, "finger", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(EmbeddedFingerFS, "fingerprint", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

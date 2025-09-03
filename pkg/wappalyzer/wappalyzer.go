@@ -2,6 +2,7 @@ package wappalyzer
 
 import (
 	"fmt"
+
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 )
 
@@ -12,21 +13,22 @@ type Wappalyzer struct {
 
 // TypeWappalyzer 存储网站技术栈信息的结构体
 type TypeWappalyzer struct {
-	WebServers           []string `json:"web_servers"`            //WEB服务器
-	ReverseProxies       []string `json:"reverse_proxies"`        //代理服务器
-	JavaScriptFrameworks []string `json:"java_script_frameworks"` //JS框架
-	JavaScriptLibraries  []string `json:"java_script_libraries"`  //JavaScript库
-	WebFrameworks        []string `json:"web_frameworks"`         //WEB框架
-	StaticSiteGenerator  []string `json:"static_site_generator"`  //静态站点生成器
-	ProgrammingLanguages []string `json:"programming_languages"`  //开发语言
-	Caching              []string `json:"caching"`                //站点缓存
-	Security             []string `json:"security"`               //站点安全
-	HostingPanels        []string `json:"hosting_panels"`         //主机面板
-	Other                []string `json:"other"`                  //其他杂项
+	WebServers           []string `json:"web_servers"`           //WEB服务器
+	ReverseProxies       []string `json:"reverse_proxies"`       //代理服务器
+	JavaScriptFrameworks []string `json:"javascript_frameworks"` //JS框架
+	JavaScriptLibraries  []string `json:"javascript_libraries"`  //JavaScript库
+	WebFrameworks        []string `json:"web_frameworks"`        //WEB框架
+	StaticSiteGenerator  []string `json:"static_site_generator"` //静态站点生成器
+	ProgrammingLanguages []string `json:"programming_languages"` //开发语言
+	Caching              []string `json:"caching"`               //站点缓存
+	Security             []string `json:"security"`              //站点安全
+	HostingPanels        []string `json:"hosting_panels"`        //主机面板
+	Other                []string `json:"other"`                 //其他杂项
 }
 
 // NewWappalyzer 创建一个新的Wappalyzer实例
 func NewWappalyzer() (*Wappalyzer, error) {
+	// New creates a new Wappalyzer client instance.
 	client, err := wappalyzer.New()
 	if err != nil {
 		return nil, fmt.Errorf("初始化Wappalyzer失败: %w", err)
@@ -37,7 +39,13 @@ func NewWappalyzer() (*Wappalyzer, error) {
 	}, nil
 }
 
-// FormatData 将wappalyzer原始数据格式化为自定义结构
+// FormatData 格式化Wappalyzer检测到的技术数据，将技术按照类别分组
+//
+// 参数:
+//   - data: 包含技术名称和对应信息的映射表，key为技术名称，value为技术信息
+//
+// 返回值:
+//   - *TypeWappalyzer: 返回按类别分组后的技术信息结构体指针
 func (w *Wappalyzer) FormatData(data map[string]wappalyzer.AppInfo) *TypeWappalyzer {
 	var result TypeWappalyzer
 
@@ -57,8 +65,11 @@ func (w *Wappalyzer) FormatData(data map[string]wappalyzer.AppInfo) *TypeWappaly
 	}
 
 	// 遍历所有找到的技术
+	//logger.Infof("开始遍历所有技术：%v", data)
 	for techName, info := range data {
+		//logger.Debugf("正在识别技术: %s,信息：%v", techName, info)
 		for _, category := range info.Categories {
+			//logger.Debugf("正在识别类别: %s", category)
 			// 如果类别在映射表中存在，则添加技术名称到对应切片
 			if slice, exists := categoryMap[category]; exists {
 				*slice = append(*slice, techName)

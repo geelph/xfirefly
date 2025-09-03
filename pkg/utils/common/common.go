@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 	"xfirefly/pkg/utils/proto"
@@ -51,19 +52,6 @@ const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-// 颜色常量
-const (
-	ColorReset  = "\033[0m"
-	ColorRed    = "\033[31m"
-	ColorGreen  = "\033[32m"
-	ColorYellow = "\033[33m"
-	ColorBlue   = "\033[34m"
-	ColorPurple = "\033[35m"
-	ColorCyan   = "\033[36m"
-	ColorWhite  = "\033[37m"
-	ColorBold   = "\033[1m"
 )
 
 // 全局变量
@@ -179,16 +167,17 @@ func GetDomain(rawUrl string) (string, error) {
 	return domain, nil
 }
 
-// RandomUA 生成随机ua头
-func RandomUA() string {
-	browsers := []string{
+var (
+	// 浏览器类型
+	browsers = []string{
 		"Chrome",
 		"Firefox",
 		"Safari",
 		"Edge",
 	}
 
-	platforms := []string{
+	// 平台类型
+	platforms = []string{
 		"Windows NT 10.0; Win64; x64",
 		"Windows NT 10.0; WOW64",
 		"Windows NT 10.0",
@@ -197,14 +186,27 @@ func RandomUA() string {
 		"X11; Ubuntu; Linux x86_64",
 	}
 
-	// 随机选择一个浏览器
-	browser := browsers[rand.Intn(len(browsers))]
+	// 随机数生成器
+	randSource = rand.New(rand.NewSource(time.Now().UnixNano()))
+	// 互斥锁
+	randMutex = sync.Mutex{}
+)
 
-	// 随机选择一个平台
-	platform := platforms[rand.Intn(len(platforms))]
+// RandomUA 生成随机ua头
+func RandomUA() string {
+	// 加锁保证并发安全
+	randMutex.Lock()
+	defer randMutex.Unlock()
+
+	// 预计算长度避免重复调用
+	browser := browsers[randSource.Intn(len(browsers))]
+	platform := platforms[randSource.Intn(len(platforms))]
 
 	// 生成随机的版本号
-	version := fmt.Sprintf("%d.0.%d.%d", rand.Intn(90)+10, rand.Intn(4000)+1000, rand.Intn(100)+1)
+	majorVersion := randSource.Intn(90) + 10
+	buildVersion := randSource.Intn(4000) + 1000
+	patchVersion := randSource.Intn(100) + 1
+	version := fmt.Sprintf("%d.0.%d.%d", majorVersion, buildVersion, patchVersion)
 
 	// 根据浏览器生成 User-Agent
 	var userAgent string
@@ -212,16 +214,15 @@ func RandomUA() string {
 	case "Chrome":
 		userAgent = fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", platform, version)
 	case "Firefox":
-		userAgent = fmt.Sprintf("Mozilla/5.0 (%s; rv:%d.0) Gecko/20100101 Firefox/%s", platform, rand.Intn(90)+10, version)
+		userAgent = fmt.Sprintf("Mozilla/5.0 (%s; rv:%d.0) Gecko/20100101 Firefox/%s", platform, randSource.Intn(90)+10, version)
 	case "Safari":
-		userAgent = fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/%d.0 Safari/605.1.15", platform, rand.Intn(14)+10)
+		userAgent = fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/%d.0 Safari/605.1.15", platform, randSource.Intn(14)+10)
 	case "Edge":
 		userAgent = fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36 Edg/%s", platform, version, version)
 	}
 
 	return userAgent
 }
-
 func ReverseString(s string) string {
 	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
@@ -300,11 +301,11 @@ func RandLetters(n int) string {
 // RandFromChoices 从choices里面随机获取
 func RandFromChoices(n int, choices string) string {
 	b := make([]byte, n)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// A rand.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, r.Int63(), letterIdxMax; i >= 0; {
+	for i, cache, remain := n-1, randSource.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {
-			cache, remain = r.Int63(), letterIdxMax
+			cache, remain = randSource.Int63(), letterIdxMax
 		}
 		if idx := int(cache & letterIdxMask); idx < len(choices) {
 			b[i] = choices[idx]
@@ -485,9 +486,9 @@ func ParseAddress(address string) (AddressInfo, error) {
 
 // GetRandomIP 获取随机ip地址
 func GetRandomIP() string {
-	rand.Seed(time.Now().UnixNano())
+	//rand.Seed(time.Now().UnixNano())
 	ip := make(net.IP, 4)
-	binary.BigEndian.PutUint32(ip, rand.Uint32())
+	binary.BigEndian.PutUint32(ip, randSource.Uint32())
 	return ip.String()
 }
 

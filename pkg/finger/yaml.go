@@ -13,7 +13,7 @@ import (
 )
 
 // FingerFile 配置poc文件目录
-const FingerFile = "finger"
+const FingerFile = "fingerprint"
 const (
 	HttpType = "http"
 	TcpType  = "tcp"
@@ -150,8 +150,8 @@ func Load(fileName string, Fingers embed.FS) (*Finger, error) {
 	p := &Finger{}
 	// 检查文件名是否已经包含finger/前缀，避免重复路径
 	filePath := fileName
-	if !strings.HasPrefix(fileName, "finger/") {
-		filePath = "finger/" + fileName
+	if !strings.HasPrefix(fileName, "fingerprint/") {
+		filePath = "fingerprint/" + fileName
 	}
 
 	yamlFile, err := Fingers.ReadFile(filePath)
