@@ -2,8 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	cel2 "xfirefly/pkg/cel"
@@ -43,35 +41,6 @@ func LoadFingerprints(options types.YamlFingerType) error {
 	// 清空现有指纹规则
 	AllFinger = AllFinger[:0]
 
-	// 使用嵌入式指纹库
-	if len(options.FingerYaml) == 0 && options.FingerPath == "" {
-		logger.Info("未指定指纹选项，将使用内置指纹库")
-		// 获取指纹规则
-		fin, err := utils.GetFingerYaml()
-		if err != nil {
-			return err
-		}
-		AllFinger = fin
-		return nil
-	}
-
-	// 从目录加载指纹文件
-	if options.FingerPath != "" {
-		logger.Infof("正在加载 %s 目录下的指纹文件", options.FingerPath)
-
-		return filepath.WalkDir(options.FingerPath, func(path string, d os.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if !d.IsDir() && common.IsYamlFile(path) {
-				if poc, err := finger.Read(path); err == nil && poc != nil {
-					AllFinger = append(AllFinger, poc)
-				}
-			}
-			return nil
-		})
-	}
-
 	// 加载单个指纹文件
 	if len(options.FingerYaml) != 0 {
 		logger.Infof("正在加载指纹文件：%s", options.FingerYaml)
@@ -88,8 +57,63 @@ func LoadFingerprints(options types.YamlFingerType) error {
 
 			if poc != nil {
 				AllFinger = append(AllFinger, poc)
+				return nil
 			}
 		}
+	}
+
+	// 从目录加载指纹文件
+	if options.FingerPath != "" {
+		logger.Infof("正在加载 %s 目录下的指纹文件", options.FingerPath)
+
+		fin, err := utils.GetCustomFingerYaml(options.FingerPath)
+		if err != nil {
+			return err
+		}
+		AllFinger = fin
+		return nil
+
+		//return filepath.WalkDir(options.FingerPath, func(path string, d os.DirEntry, err error) error {
+		//	if err != nil {
+		//		return err
+		//	}
+		//	if !d.IsDir() && common.IsYamlFile(path) {
+		//		if poc, err := finger.Read(path); err == nil && poc != nil {
+		//			AllFinger = append(AllFinger, poc)
+		//		}
+		//	}
+		//	return nil
+		//})
+	}
+
+	// 默认指纹库路径
+	customFingerPath := "./fingerprint"
+	// 判断当前目录是否存在fingerprint目录
+	if common.DirIsExist(customFingerPath) {
+		logger.Info("发现fingerprint目录,正在验证目录下的指纹文件")
+		if common.ExistYamlFile(customFingerPath) {
+			logger.Info("自定义指纹库验证成功，正在尝试加载")
+			fin, err := utils.GetCustomFingerYaml(customFingerPath)
+			if err != nil {
+				return err
+			}
+			AllFinger = fin
+			return nil
+		} else {
+			logger.Warn("fingerprint目录下无有效指纹文件，将尝试加载内置指纹库")
+		}
+	}
+
+	// 使用嵌入式指纹库
+	if len(options.FingerYaml) == 0 && options.FingerPath == "" {
+		logger.Info("未指定指纹选项，将使用内置指纹库")
+		// 获取指纹规则
+		fin, err := utils.GetFingerYaml()
+		if err != nil {
+			return err
+		}
+		AllFinger = fin
+		return nil
 	}
 
 	return nil
@@ -201,14 +225,14 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 			if len(raw) > maxDump {
 				raw = raw[:maxDump]
 			}
-			logger.Debug(fmt.Sprintf("请求数据包(截断)：\n%s", raw))
+			logger.Debugf("请求数据包(截断)：\n%s", raw)
 		}
 		if resp, ok := varMap["response"].(*proto.Response); ok && resp != nil {
 			raw := resp.Raw
 			if len(raw) > maxDump {
 				raw = raw[:maxDump]
 			}
-			logger.Debug(fmt.Sprintf("响应数据包(截断)：\n%s", raw))
+			logger.Debugf("响应数据包(截断)：\n%s", raw)
 			//// 获取请求头键信息
 			//logger.Errorf("目前获取到的响应头类型：%v", reflect.TypeOf(resp.Headers))
 			//logger.Errorf("目前获取到的响应头信息为：%v", resp.Headers["server"])

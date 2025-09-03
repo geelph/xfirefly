@@ -1,18 +1,15 @@
 id: fingerprint-yaml-Aprelium-Abyss
-
 info:
   name: Abyss Web Server
   author: geelph
   verified: true
-  description: |
-    检测Abyss Web服务器
+  description: 检测Abyss Web服务器
   reference:
     - https://aprelium.com/
   metadata:
-    - fofa-query: 'app="abyss-web-server"'
+    fofa-query: 'app="abyss-web-server"'
   tags: abyss,fofa
   created: 2025/08/01
-
 rules:
   r0:
     request:
@@ -23,7 +20,8 @@ rules:
     request:
       method: GET
       path: /
-    expression: |
-      response.status == 200 && response.headers["server"].contains("Abyss/") && response.headers["server"].contains("AbyssLib/")
+    expression: |-
+      response.status == 200 && response.headers["server"].contains("Abyss/")
+      && response.headers["server"].contains("AbyssLib/")
 
 expression: r0() || r1()

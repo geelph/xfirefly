@@ -4,6 +4,8 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"os"
+	"path/filepath"
 	finger2 "xfirefly/pkg/finger"
 	"xfirefly/pkg/utils/common"
 
@@ -75,4 +77,28 @@ func GetFingerYaml() ([]*finger2.Finger, error) {
 	}
 
 	return allFinger, nil
+}
+
+// GetCustomFingerYaml 获取指定目录及其子目录下所有指纹文件并返回
+func GetCustomFingerYaml(path string) ([]*finger2.Finger, error) {
+	// 临时存储所有指纹文件
+	var fingerYamls []*finger2.Finger
+	// 读取所有目录下的指纹文件
+	err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && common.IsYamlFile(path) {
+			if poc, err := finger2.Read(path); err == nil && poc != nil {
+				// 添加到临时存储
+				fingerYamls = append(fingerYamls, poc)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	// 返回所有指纹文件
+	return fingerYamls, nil
 }

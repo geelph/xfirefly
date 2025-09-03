@@ -218,7 +218,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 			select {
 			case <-refreshTicker.C:
 				if err := bar.RenderBlank(); err != nil {
-					logger.Debug(fmt.Sprintf("刷新进度条出错: %v", err))
+					logger.Debugf("刷新进度条出错: %v", err)
 				}
 			case <-stopRefreshChan:
 				return
@@ -231,7 +231,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 	go func() {
 		for range doneChan {
 			if err := bar.Add(1); err != nil {
-				logger.Debug(fmt.Sprintf("更新进度条出错: %v", err))
+				logger.Debugf("更新进度条出错: %v", err)
 			}
 		}
 	}()
@@ -247,10 +247,11 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 
 	// 存储输出的结果 - 线程安全的结果输出
 	saveResult := func(msg string) {
+		// 结果输出控制台
 		fmt.Print("\033[2K\r")
 		fmt.Println(msg)
 		if err := bar.RenderBlank(); err != nil {
-			logger.Debug(fmt.Sprintf("重新显示进度条出错: %v", err))
+			logger.Debugf("重新显示进度条出错: %v", err)
 		}
 	}
 
@@ -277,7 +278,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 			// 处理单个URL
 			targetResult, err := ProcessURL(target, options.Proxy, options.Timeout, r.Config.FingerWorkerCount)
 			if err != nil {
-				logger.Error(fmt.Sprintf("处理目标 %s 失败: %v", target, err))
+				logger.Errorf("处理目标 %s 失败: %v", target, err)
 				targetResult = &TargetResult{
 					URL:     target,
 					Matches: make([]*FingerMatch, 0),
@@ -314,7 +315,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 		},
 		r.Config.URLWorkerCount*5,
 		3*time.Minute,
-		func(i interface{}) { logger.Error(fmt.Sprintf("URL池goroutine异常: %v", i)) },
+		func(i interface{}) { logger.Errorf("URL池goroutine异常: %v", i) },
 	)
 
 	if err != nil {
@@ -327,7 +328,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 		urlWg.Add(1)
 		if err := pool.Invoke(urlTask{target: target}); err != nil {
 			urlWg.Done()
-			logger.Error(fmt.Sprintf("提交目标 %s 到线程池失败: %v", target, err))
+			logger.Errorf("提交目标 %s 到线程池失败: %v", target, err)
 		}
 	}
 
@@ -343,7 +344,7 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 
 	// 确保最终完成100%进度
 	if err := bar.Finish(); err != nil {
-		logger.Debug(fmt.Sprintf("完成进度条出错: %v", err))
+		logger.Debugf("完成进度条出错: %v", err)
 	}
 
 	// 显示扫描耗时信息
@@ -356,8 +357,8 @@ func (r *Runner) runScan(targets []string, options *types.CmdOptionsType) error 
 
 	// 打印池统计信息
 	stats := GetRulePoolStats()
-	logger.Info(fmt.Sprintf("规则池统计 - 总任务: %d, 已完成: %d, 失败: %d",
-		stats.TotalTasks, stats.CompletedTasks, stats.FailedTasks))
+	logger.Infof("规则池统计 - 总任务: %d, 已完成: %d, 失败: %d",
+		stats.TotalTasks, stats.CompletedTasks, stats.FailedTasks)
 
 	return nil
 }

@@ -6,8 +6,8 @@ info:
   description: 检测Adminset面板
   reference:
     - https://gitee.com/ivan_wh/adminset
-  matadata:
-    - fofa-query: 'product="AdminSet"'
+  metadata:
+    fofa-query: 'product="AdminSet"'
   tags: adminset,fofa
   created: 2025/04/07
 rules:

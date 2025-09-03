@@ -85,19 +85,19 @@ func NewCustomLib() *CustomLib {
 func Eval(env *cel.Env, expression string, params map[string]any) (ref.Val, error) {
 	ast, issues := env.Compile(expression)
 	if issues.Err() != nil {
-		logger.Error(fmt.Sprintf("CEL编译错误: %s", issues.Err()))
+		logger.Errorf("CEL编译 %s 时发生错误: %s", expression, issues.Err())
 		return nil, issues.Err()
 	}
 
 	prg, err := env.Program(ast)
 	if err != nil {
-		logger.Error(fmt.Sprintf("CEL程序创建错误: %s", err))
+		logger.Errorf("CEL程序创建错误: %s", err)
 		return nil, err
 	}
 
 	out, _, err := prg.Eval(params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("CEL执行错误: %s", err))
+		logger.Errorf("CEL执行错误: %s", err)
 		return nil, err
 	}
 

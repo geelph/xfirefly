@@ -22,10 +22,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require (
-	github.com/chainreactors/proxyclient v1.0.3
-	github.com/stretchr/testify v1.10.0
-)
+require github.com/chainreactors/proxyclient v1.0.3
 
 require (
 	cel.dev/expr v0.24.0 // indirect
@@ -38,7 +35,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/donnie4w/gofer v0.1.8 // indirect
@@ -64,7 +60,6 @@ require (
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/fastdialer v0.3.0 // indirect
 	github.com/projectdiscovery/gologger v1.1.47 // indirect
@@ -79,7 +74,6 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/shadowsocks/go-shadowsocks2 v0.1.5 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tidwall/btree v1.4.3 // indirect
 	github.com/tidwall/buntdb v1.3.0 // indirect
