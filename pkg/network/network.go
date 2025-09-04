@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chainreactors/proxyclient"
-
 	"net"
 	"net/url"
 
@@ -107,8 +105,8 @@ func NewClient(address string, conf TcpOrUdpConfig) (*Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid proxy URL: %w", err)
 		}
-		dialer, err = proxyclient.NewClient(proxyURL)
-		//dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
+		//dialer, err = proxyclient.NewClient(proxyURL)
+		dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create proxy dialer: %w", err)
 		}

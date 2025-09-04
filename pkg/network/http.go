@@ -14,9 +14,7 @@ import (
 	"xfirefly/pkg/utils/common"
 	"xfirefly/pkg/utils/proto"
 
-	"github.com/chainreactors/proxyclient"
 	"github.com/donnie4w/go-logger/logger"
-
 	"github.com/zan8in/retryablehttp"
 	"golang.org/x/net/context"
 )
@@ -192,18 +190,20 @@ func createTransport(proxyURL string) (*http.Transport, error) {
 			DisableKeepAlives:   true, // 禁用连接复用，避免"Unsolicited response"错误
 		}
 	} else {
-		proxy, err := url.Parse(proxyURL)
+		httpProxy, err := url.Parse(proxyURL)
 		if err != nil {
 			return nil, fmt.Errorf("代理地址解析失败: %v", err)
 		}
 
-		dialer, err := proxyclient.NewClient(proxy)
+		//dialer, err := proxyclient.NewClient(proxy)
+		//dialer, err := proxy.FromURL(httpProxy, proxy.Direct)
+
 		if err != nil {
 			return nil, fmt.Errorf("创建代理客户端失败: %v", err)
 		}
 
 		transport = &http.Transport{
-			DialContext:         dialer.DialContext,
+			Proxy:               http.ProxyURL(httpProxy),
 			TLSClientConfig:     tlsConfig,
 			MaxIdleConns:        100,
 			MaxIdleConnsPerHost: 10,

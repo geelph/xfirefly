@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: title.go
-    @Date: 2025/4/3 上午9:47*
-*/
 package finger
 
 import (

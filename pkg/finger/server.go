@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: server.go
-    @Date: 2025/4/3 上午10:10*
-*/
 package finger
 
 import (
@@ -15,7 +8,13 @@ import (
 	"xfirefly/pkg/types"
 )
 
-// ExtractServerInfo 从HTTP响应头中提取server信息
+// ExtractServerInfo 从HTTP响应头中提取服务器信息
+// 参数:
+//   - header: HTTP响应头
+//
+// 返回值:
+//   - string: 清理后的服务器名称
+//   - string: 服务器版本号
 func ExtractServerInfo(header http.Header) (string, string) {
 	serverValue := header.Get("Server")
 	if serverValue == "" {

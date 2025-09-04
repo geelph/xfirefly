@@ -90,8 +90,11 @@ func GetBaseInfo(target, proxy string, timeout int) (*BaseInfoResponse, error) {
 	}
 
 	// 提取基本信息
+	// 获取响应状态码
 	statusCode := int32(resp.StatusCode)
+	// 获取标题
 	title := finger.GetTitle(target, resp)
+	// 获取服务器信息，包含原始服务器信息、服务器类型和版本
 	serverInfo := finger.GetServerInfoFromResponse(resp)
 	newURL, _ := url.Parse(target)
 	if resp.Request != nil {

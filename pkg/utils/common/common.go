@@ -364,6 +364,7 @@ func DealMultipart(contentType string, ruleBody string) (result string, err erro
 
 // ParseTarget 处理请求url地址
 func ParseTarget(target, path string) string {
+	// 去除末尾的斜杠
 	target = strings.TrimRight(target, "/")
 	if path == "" {
 		return target

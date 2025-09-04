@@ -181,6 +181,7 @@ func (g *GetIconHash) Run() string {
 		hash = g.getIconHash(g.iconURL)
 	}
 	if hash == 0 {
+		// 浏览器访问会发送一个默认的icon请求
 		defaultURL := g.getDefaultIconURL(g.iconURL)
 		if defaultURL != "" {
 			hash = g.getIconHash(defaultURL)

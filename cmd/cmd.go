@@ -25,8 +25,8 @@ func init() {
 //	@Description: 整个程序的入口
 func Execute() {
 	// 加载配置文件
-	logger.Info("使用以下位置的配置文件：xxx")
-	logger.Info("未能正确加载配置文件或配置文件不存在，使用默认配置")
+	//logger.Info("使用以下位置的配置文件：xxx")
+	//logger.Info("未能正确加载配置文件或配置文件不存在，使用默认配置")
 
 	// 声明参数结构变量
 	options, err := cli.NewCmdOptions()

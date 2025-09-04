@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: runner.go
-    @Date: 2025/2/20 下午3:37*
-*/
 package finger
 
 import (
@@ -23,8 +16,8 @@ import (
 
 var (
 	// 本地上限与 network.MaxDefaultBody 对齐，由调用方统一限制
-	maxDefaultBody int64 = 512 * 1024 // 512KB
-	defaultTimeout       = 5 * time.Second
+	maxDefaultBody int64 = 512 * 1024      // 512KB
+	defaultTimeout       = 5 * time.Second // 5秒
 )
 
 // SendRequest yaml poc发送http请求
@@ -37,27 +30,29 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 	}
 
 	options := network.OptionsRequest{
-		Proxy:              "",              // 初始化为空，后面设置
-		Timeout:            timeoutDuration, // 使用确定的超时参数
-		Retries:            2,               // 增加重试次数
-		FollowRedirects:    !rule.Request.FollowRedirects,
-		InsecureSkipVerify: true, // 忽略SSL证书错误
-		CustomHeaders:      map[string]string{},
+		Proxy:              "",                            // 初始化为空，后面设置
+		Timeout:            timeoutDuration,               // 使用确定的超时参数
+		Retries:            2,                             // 增加重试次数
+		FollowRedirects:    !rule.Request.FollowRedirects, // 忽略重定向
+		InsecureSkipVerify: true,                          // 忽略SSL证书错误
+		CustomHeaders:      map[string]string{},           // 创建自定义headers
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout)
 	defer cancel() // 在读取完响应后取消
 
 	// 设置代理地址
 	if proxy != "" {
+		// 解析代理地址
 		proxyURL, err := url.Parse(proxy)
 		if err != nil {
 			logger.Errorf("代理地址解析失败:%v", err)
 		} else {
+			// 设置代理选项，字符串类型
 			options.Proxy = proxyURL.String()
 		}
 	}
 
-	// 处理path
+	// 获取规则中的请求路径并处理
 	newPath := formatPath(rule.Request.Path)
 
 	// 处理url
@@ -102,19 +97,19 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 					data = common.FromHex(data)
 				}
 			}
-			logger.Debug(fmt.Sprintf("TCP发送数据：%s", data))
+			logger.Debugf("TCP发送数据：%s", data)
 			errs := nc.Send([]byte(data))
 			if errs != nil {
-				logger.Debug(fmt.Sprintf("tcp send error：%s", errs.Error()))
+				logger.Debugf("tcp send error：%s", errs.Error())
 			}
 			res, err := nc.RecvTcp()
 			if err != nil {
-				logger.Debug(fmt.Sprintf("tcp receive error：%s", err.Error()))
+				logger.Debugf("tcp receive error：%s", err.Error())
 			}
 			_ = nc.Close()
 			err = network.RawParse(nc, []byte(data), res, variableMap)
 			if err != nil {
-				logger.Debug(fmt.Sprintf("tcp or udp parse error：%s", err.Error()))
+				logger.Debugf("tcp or udp parse error：%s", err.Error())
 			}
 			return variableMap, nil
 		case common.UdpType:
@@ -133,7 +128,7 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 				ServerName:  info.Host,
 			})
 			if err != nil {
-				logger.Debug(fmt.Sprintf("udp error：%s", err.Error()))
+				logger.Debugf("udp error：%s", err.Error())
 				return nil, err
 			}
 			data := rule.Request.Data
@@ -146,26 +141,30 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 			}
 			errs := nc.Send([]byte(data))
 			if errs != nil {
-				fmt.Println("udp send error:", errs.Error())
+				//fmt.Println("udp send error:", errs.Error())
+				logger.Errorf("udp send error: %s", errs.Error())
 			}
 			res, err := nc.RecvTcp()
 			if err != nil {
-				fmt.Println("udp receive error:", err.Error())
+				//fmt.Println("udp receive error:", err.Error())
+				logger.Errorf("udp receive error: %s", err.Error())
 			}
 			_ = nc.Close()
 			err = network.RawParse(nc, []byte(data), res, variableMap)
 			if err != nil {
-				fmt.Println("udp or udp parse error:", err.Error())
+				//fmt.Println("udp or udp parse error:", err.Error())
+				logger.Errorf("udp or udp parse error: %s", err.Error())
 			}
 			return variableMap, nil
 		case common.GoType:
-			fmt.Println("执行go模块调用发送请求，当前模块未完成")
+			//fmt.Println("执行go模块调用发送请求，当前模块未完成")
+			logger.Fatal("执行go模块调用发送请求，当前模块未完成")
 			return nil, fmt.Errorf("go module not implemented")
 		}
 	} else {
 		if len(rule.Request.Raw) > 0 {
 			// 执行raw格式请求
-			fmt.Println("执行raw格式请求")
+			logger.Info("执行raw格式请求")
 			rt := network.RawHttp{RawhttpClient: network.GetRawHTTP(int(options.Timeout))}
 			err := rt.RawHttpRequest(rule.Request.Raw, target, variableMap)
 			if err != nil {
@@ -205,18 +204,19 @@ func SendRequest(target string, req RuleRequest, rule Rule, variableMap map[stri
 	reader := io.LimitReader(resp.Body, maxDefaultBody)
 	body, err := io.ReadAll(reader)
 	if err != nil {
-		logger.Debug(fmt.Sprintf("读取响应体出错：%s", err))
+		logger.Debugf("读取响应体出错：%s", err)
 		// 即使读取响应体出错，也继续处理，使用空响应体
 		body = []byte{}
 	}
 	utf8RespBody := common.Str2UTF8(string(body))
 
 	// 计算响应时间
+	// 测量从发起 HTTP 请求到收到第一字节响应之间的时间（即 TTFB - Time To First Byte）
 	var milliseconds int64
 	start := time.Now()
 	trace := httptrace.ClientTrace{}
 	trace.GotFirstResponseByte = func() {
-		milliseconds = time.Since(start).Nanoseconds() / 1e6
+		milliseconds = time.Since(start).Nanoseconds() / 1e6 // 转换成毫秒
 	}
 	// 处理响应的raw，传入代理参数
 	protoResp := buildProtoResponse(resp, utf8RespBody, milliseconds, proxy)

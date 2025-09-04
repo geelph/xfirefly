@@ -1,10 +1,3 @@
-/*
-  - Package finger
-    @Author: zhizhuo
-    @IDE：GoLand
-    @File: req.go
-    @Date: 2025/2/21 下午3:06*
-*/
 package finger
 
 import (
@@ -18,15 +11,25 @@ import (
 	"github.com/donnie4w/go-logger/logger"
 )
 
-// formatPath 格式化路径
+// formatPath 格式化路径字符串，确保路径以斜杠开头，并对特殊字符进行URL编码
+// 参数:
+//
+//	path: 需要格式化的路径字符串，规则中的路径
+//
+// 返回值:
+//
+//	string: 格式化后的路径字符串
 func formatPath(path string) string {
 	newPath := strings.TrimSpace(path)
+	// 如果路径以^开头，则添加斜杠
 	if strings.HasPrefix(newPath, "^") {
 		newPath = "/" + newPath[1:]
 	}
+	// 如果路径没有以斜杠开头，则添加斜杠
 	if !strings.HasPrefix(newPath, "/") {
 		newPath = "/" + newPath
 	}
+	// 对路径中的空格和#进行url编码
 	newPath = strings.ReplaceAll(newPath, " ", "%20")
 	newPath = strings.ReplaceAll(newPath, "#", "%23")
 	return newPath
@@ -38,7 +41,7 @@ func formatBody(body, contentType string, variableMap map[string]any) string {
 	if strings.HasPrefix(strings.ToLower(contentType), "multipart/form-data") && strings.Contains(body, "\n\n") {
 		multipartBody, err := common.DealMultipart(contentType, body)
 		if err != nil {
-			fmt.Println("处理multipart/form-data出错:", err)
+			logger.Errorf("处理multipart/form-data出错:", err)
 			return body
 		}
 		body = SetVariableMap(strings.TrimSpace(multipartBody), variableMap)
