@@ -197,7 +197,7 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 		}
 		// 检查是否可以使用缓存
 		isCache, cache := ShouldUseCache(rule, urlStr)
-		logger.Debug(fmt.Sprintf("%s 规则 %s 是否使用缓存：%t", target, rule.Key, isCache))
+		logger.Debugf("%s 规则 %s 是否使用缓存：%t", target, rule.Key, isCache)
 
 		if isCache && cache.Request != nil && cache.Response != nil {
 			varMap["request"] = cache.Request
@@ -206,7 +206,7 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 			// 发送新请求
 			newVarMap, err := finger.SendRequest(target, rule.Value.Request, rule.Value, varMap, proxy, timeout)
 			if err != nil {
-				logger.Debug(fmt.Sprintf("规则 %s 请求失败: %v", rule.Key, err))
+				logger.Debugf("规则 %s 请求失败: %v", rule.Key, err)
 				customLib.WriteRuleFunctionsROptions(rule.Key, false)
 				continue
 			}
@@ -311,6 +311,6 @@ func PrintPresetFinger() error {
 		fmt.Printf("| %-5d | %-40s \n", i+1, finger.Info.Name)
 	}
 	// 打印表尾
-	fmt.Println("+", strings.Repeat("-", 5), "+", strings.Repeat("-", 42), "+")
+	fmt.Println("+", strings.Repeat("-", 5), "+", strings.Repeat("-", 42))
 	return nil
 }

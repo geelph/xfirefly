@@ -174,7 +174,7 @@ func processRuleTask(task *RuleTask, fingerActive bool) {
 
 	if err != nil {
 		atomic.AddInt64(&rulePoolStats.FailedTasks, 1)
-		logger.Debugf("规则 %s 执行失败: %v", task.Finger.Id, err)
+		logger.Warnf("规则 %s 执行失败: %v", task.Finger.Id, err)
 		return
 	}
 

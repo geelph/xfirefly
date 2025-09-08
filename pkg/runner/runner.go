@@ -143,8 +143,8 @@ func (r *Runner) Run(options *types.CmdOptionsType) error {
 	// 在函数返回时释放全局池资源
 	defer ReleaseRulePool()
 
-	logger.Info(fmt.Sprintf("开始扫描 %d 个目标，使用 %d 个URL并发线程, %d 个规则并发线程...",
-		len(targets), r.Config.URLWorkerCount, r.Config.FingerWorkerCount))
+	logger.Infof("开始扫描 %d 个目标，使用 %d 个URL并发线程, %d 个规则并发线程...",
+		len(targets), r.Config.URLWorkerCount, r.Config.FingerWorkerCount)
 
 	// 执行扫描
 	if err := r.runScan(targets, options); err != nil {

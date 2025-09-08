@@ -148,13 +148,14 @@ func setDefaults(options *OptionsRequest) {
 func configureHeaders(req *retryablehttp.Request, options OptionsRequest) {
 	// 设置通用请求头
 	headers := map[string]string{
-		"User-Agent":      common.RandomUA(),
-		"Accept":          "application/x-shockwave-flash, image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*",
-		"X-Forwarded-For": common.GetRandomIP(),
-		"Pragma":          "no-cache",
-		"Cookie":          "cookie=" + common.RandomString(15),
-		"Cache-Control":   "no-cache",
-		"Connection":      "close", // 确保每次请求后不保持连接
+		"User-Agent": common.RandomUA(),
+		//"Accept":          "application/x-shockwave-flash, image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*",
+		"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		//"X-Forwarded-For": common.GetRandomIP(),
+		"Pragma":        "no-cache",
+		"Cookie":        "cookie=" + common.RandomString(15),
+		"Cache-Control": "no-cache",
+		"Connection":    "close", // 确保每次请求后不保持连接
 	}
 
 	for k, v := range headers {
