@@ -12,6 +12,7 @@ import (
 	"xfirefly/pkg/utils/proto"
 
 	"github.com/donnie4w/go-logger/logger"
+	"github.com/fatih/color"
 )
 
 // AllFinger 全局指纹数据
@@ -163,6 +164,8 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 		finger.IsFuzzSet(fg.Payloads.Payloads, varMap, customLib)
 	}
 
+	// TODO: 根据expression字段进行规则检测,以最小的规则数量进行匹配
+
 	// 评估规则
 	for _, rule := range fg.Rules {
 		// 提前处理path
@@ -250,6 +253,10 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 		} else {
 			ruleBool := result.Value().(bool)
 			logger.Debugf("规则 %s 评估结果: %v", rule.Value.Expression, ruleBool)
+			// TODO：显示命中规则
+			if ruleBool {
+				logger.Infof("规则 %s 中的表达式 %s 命中", color.BlueString(rule.Key), color.BlueString(rule.Value.Expression))
+			}
 			customLib.WriteRuleFunctionsROptions(rule.Key, ruleBool)
 		}
 
@@ -280,4 +287,30 @@ func evaluateFingerprintWithCache(fg *finger.Finger, target string, baseInfo *Ba
 	logger.Debugf("最终规则 %s 评估结果: %v", fg.Expression, resultData.Result)
 
 	return resultData, nil
+}
+
+// 打印预配置（指定--print参数时调用）
+func PrintPresetFinger() error {
+	// 获取预配置指纹列表
+	presetFinger, err := utils.GetFingerYaml()
+	if err != nil {
+		logger.Error("获取预配置指纹列表失败:", err)
+		return err
+	}
+
+	// 打印表头
+	fmt.Println("+", strings.Repeat("-", 5), "+", strings.Repeat("-", 42))
+	fmt.Printf("| %-5s | %-40s \n", "Index", "Name")
+	fmt.Println("+", strings.Repeat("-", 5), "+", strings.Repeat("-", 42))
+
+	// 遍历预配置指纹列表并打印
+	for i, finger := range presetFinger {
+		//fmt.Println("指纹名称:", finger.Id)
+		//fmt.Println("描述:", finger.Info.Name)
+
+		fmt.Printf("| %-5d | %-40s \n", i+1, finger.Info.Name)
+	}
+	// 打印表尾
+	fmt.Println("+", strings.Repeat("-", 5), "+", strings.Repeat("-", 42), "+")
+	return nil
 }

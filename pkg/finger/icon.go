@@ -283,6 +283,18 @@ func GetIconURL(pageURL string, html string) string {
 		}
 	}
 
+	// 根据可能的icon标签没找到，尝试从link标签中寻找ico图标
+	if len(candidateIcons) == 0 {
+		// 查找link标签中可能的favicon
+		reIcon := regexp.MustCompile(`<link[^>]+href=["']([^"']+\.ico)`)
+		iconList := reIcon.FindAllStringSubmatch(html, -1)
+		for _, match := range iconList {
+			if len(match) > 1 {
+				candidateIcons = append(candidateIcons, match[1])
+			}
+		}
+	}
+
 	// 查找所有图片标签中可能的favicon
 	reImg := regexp.MustCompile(`<img[^>]+src=["']([^"']+(?:favicon|icon)[^"']*)["'][^>]*>`)
 	imgMatches := reImg.FindAllStringSubmatch(html, -1)

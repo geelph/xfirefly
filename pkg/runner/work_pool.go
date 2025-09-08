@@ -100,7 +100,7 @@ func InitGlobalRulePool(workerCount int, fingerActive bool) error {
 		2*time.Minute,
 		func(i interface{}) {
 			atomic.AddInt64(&rulePoolStats.FailedTasks, 1)
-			logger.Error(fmt.Sprintf("规则池goroutine异常: %v", i))
+			logger.Errorf("规则池goroutine异常: %v", i)
 		},
 	)
 	if err != nil {
@@ -108,7 +108,7 @@ func InitGlobalRulePool(workerCount int, fingerActive bool) error {
 	}
 
 	globalRulePool = pool
-	logger.Info(fmt.Sprintf("全局规则池初始化完成，工作线程数: %d", workerCount))
+	logger.Infof("全局规则池初始化完成，工作线程数: %d", workerCount)
 	return nil
 }
 
@@ -174,7 +174,7 @@ func processRuleTask(task *RuleTask, fingerActive bool) {
 
 	if err != nil {
 		atomic.AddInt64(&rulePoolStats.FailedTasks, 1)
-		logger.Debug(fmt.Sprintf("规则 %s 执行失败: %v", task.Finger.Id, err))
+		logger.Debugf("规则 %s 执行失败: %v", task.Finger.Id, err)
 		return
 	}
 
@@ -183,7 +183,7 @@ func processRuleTask(task *RuleTask, fingerActive bool) {
 		select {
 		case task.ResultChan <- result:
 		default:
-			logger.Debug(fmt.Sprintf("结果通道已满，丢弃规则 %s 的结果", task.Finger.Id))
+			logger.Debugf("结果通道已满，丢弃规则 %s 的结果", task.Finger.Id)
 		}
 	}
 }

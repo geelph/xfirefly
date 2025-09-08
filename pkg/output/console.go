@@ -143,9 +143,9 @@ func HandleMatchResults(targetResult *TargetResult, output string, sockOutput st
 
 	// 组合最终输出信息，技术栈在一行，匹配结果放在末尾
 	if techInfoStr != "" {
-		outputMsg = fmt.Sprintf("%s%s%s", baseInfoStr, techInfoStr, matchResultStr)
+		outputMsg = fmt.Sprintf("%s %s %s", baseInfoStr, techInfoStr, matchResultStr)
 	} else {
-		outputMsg = fmt.Sprintf("%s%s", baseInfoStr, matchResultStr)
+		outputMsg = fmt.Sprintf("%s %s", baseInfoStr, matchResultStr)
 	}
 
 	// 输出结果

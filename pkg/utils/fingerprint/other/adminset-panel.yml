@@ -1,19 +1,19 @@
-id: fingerprint-yaml-adminset-adminsetpanel
+id: fingerprint-yaml-adminset_panel
 info:
-  name: Adminset
+  name: Adminset Panel
   author: zhizhuo
   verified: true
   description: 检测Adminset面板
   reference:
     - https://gitee.com/ivan_wh/adminset
   metadata:
-    fofa-query: 'product="AdminSet"'
+    fofa-query: product="AdminSet"
   tags: adminset,fofa
   created: 2025/04/07
 rules:
-  r0:
+  kw_in_title:
     request:
       method: GET
       path: /
     expression: response.status == 200 && response.body.ibcontains(b"<title>AdminSet Login</title>")
-expression: r0()
+expression: kw_in_title()

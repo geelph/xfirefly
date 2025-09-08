@@ -53,7 +53,10 @@ func Execute() {
 
 	// 打印所有内置配置
 	if options.PrintPreset {
-		logger.Info("正在打印内置配置信息")
+		logger.Info("正在打印内置指纹信息")
+		if err := runner.PrintPresetFinger(); err != nil {
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}
 

@@ -1,27 +1,26 @@
-id: fingerprint-yaml-Aprelium-Abyss
+id: fingerprint-yaml-Aprelium-Abyss_Web_Server
 info:
-  name: Abyss Web Server
-  author: geelph
+  name: Abyss_Web_Server
+  author: xfirefly
   verified: true
   description: 检测Abyss Web服务器
   reference:
     - https://aprelium.com/
   metadata:
-    fofa-query: 'app="abyss-web-server"'
+    fofa-query: app="abyss-web-server"
   tags: abyss,fofa
   created: 2025/08/01
 rules:
-  r0:
+  kw_in_body:
     request:
       method: GET
       path: /
     expression: response.status == 200 && response.body.ibcontains(b"Welcome to Abyss Web Server")
-  r1:
+  kw_in_header:
     request:
       method: GET
       path: /
     expression: |-
-      response.status == 200 && response.headers["server"].contains("Abyss/")
-      && response.headers["server"].contains("AbyssLib/")
-
-expression: r0() || r1()
+      response.status == 200 && response.raw_header.ibcontains(b"Abyss/")
+      && response.raw_header.ibcontains(b"AbyssLib/")
+expression: kw_in_body() || kw_in_header()
