@@ -25,7 +25,7 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 	flagSet.CreateGroup("output", "OUTPUT",
 		flagSet.StringVarP(&options.Output, "output", "o", "", "output file to write found result"),
 		flagSet.BoolVar(&options.JSONOutput, "json", false, "write output in JSON format"),
-		flagSet.StringVar(&options.SockOutput, "sock", "", "write output socket in JOSN format"),
+		flagSet.StringVar(&options.SockOutput, "sock", "", "write output socket in JSON format"),
 	)
 	// 优化参数
 	flagSet.CreateGroup("optimizations", "OPTIMIZATIONS",

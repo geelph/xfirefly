@@ -92,11 +92,21 @@ func (g *GetIconHash) hashDataURL(iconURL string) int32 {
 	if len(parts) != 2 {
 		return 0
 	}
-	iconData := StandBase64([]byte(parts[1]))
-	if len(iconData) != 0 {
-		return Mmh3Hash32(iconData)
+	//iconData := StandBase64([]byte(parts[1]))
+	//if len(iconData) != 0 {
+	//	return Mmh3Hash32(iconData)
+	//}
+	// 修复+被意外转为%20（前面获取是按照iconurl进行的操作）
+	base64Part := strings.ReplaceAll(parts[1], "%20", "+")
+	//logger.Info(base64Part)
+	iconData, err := base64.StdEncoding.DecodeString(base64Part)
+	if err != nil {
+		// 处理错误，比如日志或返回
+		logger.Warnf("Base64 decode failed:", err)
+		return 0
 	}
-	return 0
+	return Mmh3Hash32(StandBase64(iconData))
+	//return 0
 }
 
 // hashHTTPURL 处理 HTTP URL 并计算 hash 值
@@ -213,6 +223,7 @@ func GetIconURL(pageURL string, html string) string {
 	// 查找所有可能的icon标签
 	iconTags := []string{
 		"<link rel=\"icon\"",
+		"<link rel='icon'",
 		"<link rel=icon",
 		"<link rel=\"shortcut icon\"",
 		"<link rel=shortcut icon",
