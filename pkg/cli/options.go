@@ -18,7 +18,7 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 	flagSet := goflags.NewFlagSet()
 	// 目标拆解
 	flagSet.CreateGroup("target", "TARGET",
-		flagSet.StringSliceVarP(&options.Target, "target", "u", nil, "target URLs/hosts to scan", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Target, "target", "u", nil, "target URLs/hosts to scan", goflags.NormalizedOriginalStringSliceOptions),
 		flagSet.StringVarP(&options.TargetsFile, "list", "l", "", "path to file containing a list of target URLs/hosts to scan (one per line)"),
 	)
 	// 结果输出
