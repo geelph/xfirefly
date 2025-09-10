@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"math/big"
 	"math/rand"
 	"net"
@@ -23,9 +24,10 @@ import (
 	"unicode/utf8"
 	"xfirefly/pkg/utils/proto"
 
-	"github.com/axgle/mahonia"
 	"github.com/donnie4w/go-logger/logger"
 	"github.com/spaolacci/murmur3"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 // AddressInfo 封装解析结果的结构体
@@ -54,10 +56,8 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-// 全局变量
 var (
-	// 维护的日志等级变量，go-logger中没有提供GetLevel的函数
-	LogLevel = logger.LEVEL_INFO
+	LogLevel = logger.LEVEL_INFO // 维护的日志等级变量，go-logger中没有提供GetLevel的函数
 )
 
 var compoundDomains = map[string]bool{
@@ -223,6 +223,12 @@ func RandomUA() string {
 
 	return userAgent
 }
+
+// ReverseString
+//
+//	@Description: 字符串逆转
+//	@param s 原字符串
+//	@return string 逆转后的字符串
 func ReverseString(s string) string {
 	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
@@ -263,12 +269,38 @@ func Str2UTF8(str string) string {
 		return ""
 	}
 	if !utf8.ValidString(str) {
-		return mahonia.NewDecoder("gb18030").ConvertString(str)
+		nstr, err := Str2GB18030Str(str)
+		if err != nil {
+			logger.Error("Str2UTF8 error: %v", err)
+			return ""
+		}
+		return nstr
+		//return mahonia.NewDecoder("gb18030").ConvertString(str)
 	}
 	return str
 }
 
-// Mmh3Hash32 计算 mmh3 hash
+// Str2GB18030Str
+//
+//	@Description: 字符串转 GB18030
+//	@param str 原字符串
+//	@return string 转换后的字符串
+//	@return error 错误信息s
+func Str2GB18030Str(str string) (string, error) {
+	encoder := simplifiedchinese.GB18030.NewEncoder()
+	reader := transform.NewReader(strings.NewReader(str), encoder)
+	gbBytes, err := io.ReadAll(reader)
+	if err != nil {
+		return "", err
+	}
+	return string(gbBytes), nil
+}
+
+// Mmh3Hash32
+//
+//	@Description: 计算给定字节的 mmh3 hash
+//	@param raw 字节数组
+//	@return int32 mmh3 hash值
 func Mmh3Hash32(raw []byte) int32 {
 	var h32 = murmur3.New32()
 	_, err := h32.Write(raw)
@@ -278,17 +310,24 @@ func Mmh3Hash32(raw []byte) int32 {
 	return int32(h32.Sum32())
 }
 
-// Base64Encode base64 encode
-func Base64Encode(braw []byte) []byte {
+// StandBase64Encode
+//
+//	@Description: 标准化Base64编码(符合 MIME 标准（RFC 2045） 中对 Base64 编码文本的建议：每行不超过 76 个字符。)
+//	@param braw 字节数组
+//	@return []byte base64编码后的字节数组
+func StandBase64Encode(braw []byte) []byte {
+	// 标准 Base64 编码
 	bckd := base64.StdEncoding.EncodeToString(braw)
 	var buffer bytes.Buffer
 	for i := 0; i < len(bckd); i++ {
 		ch := bckd[i]
 		buffer.WriteByte(ch)
+		// 每76字符换行
 		if (i+1)%76 == 0 {
 			buffer.WriteByte('\n')
 		}
 	}
+	// 最后再加一个换行
 	buffer.WriteByte('\n')
 	return buffer.Bytes()
 }
@@ -517,7 +556,12 @@ func RemoveDuplicateURLs(urls []string) []string {
 	return result
 }
 
-// URLDecode 解码URL编码的字符串
+// URLDecode
+//
+//	@Description: 解码URL编码的字符串
+//	@param encodedString 待解码的字符串
+//	@return string 解码后的字符串
+//	@return error 错误信息
 func URLDecode(encodedString string) (string, error) {
 	// 替换+为空格
 	encodedString = strings.Replace(encodedString, "+", " ", -1)
@@ -531,7 +575,11 @@ func URLDecode(encodedString string) (string, error) {
 	return decodedString, nil
 }
 
-// URLEncode 编码字符串为URL编码格式
+// URLEncode
+//
+//	@Description: 编码字符串为URL编码格式
+//	@param rawString 原始字符串
+//	@return string 编码后的字符串
 func URLEncode(rawString string) string {
 	// 使用QueryEscape进行URL编码
 	encodedString := url.QueryEscape(rawString)

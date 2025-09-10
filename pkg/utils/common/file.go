@@ -15,16 +15,11 @@ func Exists(path string) bool {
 	return true
 }
 
-// IsYamlFile checks if the given filename has a YAML file extension.
-// It returns true if the filename ends with either ".yaml" or ".yml".
+// IsYamlFile
 //
-// Parameters:
-//
-//	filename - the name of the file to check
-//
-// Returns:
-//
-//	bool - true if the file is a YAML file, false otherwise
+//	@Description: 依据扩展名判断文件是否为 YAML 文件
+//	@param filename 文件名
+//	@return bool 是否为 YAML 文件
 func IsYamlFile(filename string) bool {
 	return strings.HasSuffix(filename, ".yaml") || strings.HasSuffix(filename, ".yml")
 }

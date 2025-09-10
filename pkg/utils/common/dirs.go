@@ -1,10 +1,11 @@
 package common
 
 import (
-	"github.com/donnie4w/go-logger/logger"
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/donnie4w/go-logger/logger"
 )
 
 // DirIsExist 判断指定目录是否存在
@@ -26,7 +27,11 @@ func DirIsExist(path string) bool {
 	return info.IsDir()
 }
 
-// ExistYamlFile 判断目录及其子目录是否存在yaml文件
+// ExistYamlFile
+//
+//	@Description: 判断目录及其子目录是否存在yaml文件
+//	@param path 目录路径
+//	@return bool 是否存在yaml文件
 func ExistYamlFile(path string) bool {
 	// 遍历目录及其子目录
 	return filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {

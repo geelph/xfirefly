@@ -1,7 +1,6 @@
 package finger
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -17,23 +16,22 @@ import (
 	"xfirefly/pkg/utils/common"
 
 	"github.com/donnie4w/go-logger/logger"
-	"github.com/spaolacci/murmur3"
 	_ "github.com/vmihailenco/msgpack/v5"
 )
 
 // GetIconHash 获取icon hash
 type GetIconHash struct {
-	iconURL    string
-	retries    int
-	headers    map[string]string
-	fileHeader []string
-	proxy      string
+	iconURL    string            // 目标图标URL
+	retries    int               // 重试次数
+	headers    map[string]string // HTTP请求头
+	fileHeader []string          // 常见图片文件头标识
+	proxy      string            // 代理设置
 }
 
 // NewGetIconHash 初始化 GetIconHash
 func NewGetIconHash(iconURL string, proxy string, retries ...int) *GetIconHash {
-	// 设置默认值为 1
-	retriesValue := 1
+	// 设置默认值为 0，不进行重试
+	retriesValue := 0
 	if len(retries) > 0 {
 		retriesValue = retries[0]
 	}
@@ -67,16 +65,12 @@ func (g *GetIconHash) getDefaultIconURL(iconURL string) string {
 	return fmt.Sprintf("%s://%s/favicon.ico", parsedURL.Scheme, parsedURL.Host)
 }
 
-// getIconHash calculates the hash value of an icon based on its URL.
-// It handles both data URLs (base64 encoded images) and HTTP URLs.
+// getIconHash
 //
-// Parameters:
-//
-//	iconURL - the URL of the icon, either a data URL or HTTP URL
-//
-// Returns:
-//
-//	int32 - the calculated hash value of the icon
+//	@Description: 计算icon hash
+//	@receiver g GetIconHash对象
+//	@param iconURL 图标URL
+//	@return int32 icon hash值
 func (g *GetIconHash) getIconHash(iconURL string) int32 {
 	// Check if the icon URL is a data URL (base64 encoded image)
 	if strings.HasPrefix(iconURL, "data:") {
@@ -92,10 +86,7 @@ func (g *GetIconHash) hashDataURL(iconURL string) int32 {
 	if len(parts) != 2 {
 		return 0
 	}
-	//iconData := StandBase64([]byte(parts[1]))
-	//if len(iconData) != 0 {
-	//	return Mmh3Hash32(iconData)
-	//}
+
 	// 修复+被意外转为%20（前面获取是按照iconurl进行的操作）
 	base64Part := strings.ReplaceAll(parts[1], "%20", "+")
 	//logger.Info(base64Part)
@@ -105,7 +96,7 @@ func (g *GetIconHash) hashDataURL(iconURL string) int32 {
 		logger.Warnf("Base64 decode failed:", err)
 		return 0
 	}
-	return Mmh3Hash32(StandBase64(iconData))
+	return common.Mmh3Hash32(common.StandBase64Encode(iconData))
 	//return 0
 }
 
@@ -142,7 +133,7 @@ func (g *GetIconHash) hashHTTPURL(iconURL string) int32 {
 
 		// 验证是否为图片
 		if strings.HasPrefix(resp.Header.Get("Content-Type"), "image") && len(bodyBytes) > 0 {
-			return Mmh3Hash32(StandBase64(bodyBytes))
+			return common.Mmh3Hash32(common.StandBase64Encode(bodyBytes))
 		}
 
 		if len(bodyBytes) > 0 {
@@ -150,38 +141,13 @@ func (g *GetIconHash) hashHTTPURL(iconURL string) int32 {
 			logger.Debugf("响应头前8个字节: %s", bodyHex)
 			for _, fh := range g.fileHeader {
 				if strings.HasPrefix(bodyHex, strings.ToLower(fh)) {
-					return Mmh3Hash32(StandBase64(bodyBytes))
+					return common.Mmh3Hash32(common.StandBase64Encode(bodyBytes))
 				}
 			}
 		}
 	}
 
 	return 0
-}
-
-// StandBase64 标准化Base64编码
-func StandBase64(raw []byte) []byte {
-	if len(raw) == 0 {
-		return []byte{}
-	}
-	bckd := base64.StdEncoding.EncodeToString(raw)
-	var buffer bytes.Buffer
-	for i := 0; i < len(bckd); i++ {
-		ch := bckd[i]
-		buffer.WriteByte(ch)
-		if (i+1)%76 == 0 {
-			buffer.WriteByte('\n')
-		}
-	}
-	buffer.WriteByte('\n')
-	return buffer.Bytes()
-}
-
-// Mmh3Hash32 计算Mmh3Hash32哈希值
-func Mmh3Hash32(raw []byte) int32 {
-	hasher := murmur3.New32()
-	_, _ = hasher.Write(raw)
-	return int32(hasher.Sum32())
 }
 
 // Run 运行获取icon hash的流程
@@ -201,10 +167,15 @@ func (g *GetIconHash) Run() string {
 }
 
 // GetIconURL 获取icon的url地址
+//
+//	@Description: 获取icon的url地址
+//	@param pageURL 请求页面的URL(用于拼接最终的URL)
+//	@param html HTML内容(有最大限制512KB)
+//	@return string icon的url地址
 func GetIconURL(pageURL string, html string) string {
 	parsedURL, err := url.Parse(pageURL)
 	if err != nil {
-		logger.Error(fmt.Sprintf("URL解析错误: %s", err))
+		logger.Errorf("URL解析错误: %s", err)
 		return ""
 	}
 
@@ -220,7 +191,7 @@ func GetIconURL(pageURL string, html string) string {
 	// 检查HTML中是否有icon标签
 	htmlLower := strings.ToLower(html)
 
-	// 查找所有可能的icon标签
+	// 查找所有可能的icon标签(存在特殊情况可自行添加)
 	iconTags := []string{
 		"<link rel=\"icon\"",
 		"<link rel='icon'",
@@ -261,14 +232,17 @@ func GetIconURL(pageURL string, html string) string {
 	for _, tag := range iconTags {
 		startPos := 0
 		for {
+			// 找到下一个匹配的tag并返回下标
 			index := strings.Index(htmlLower[startPos:], tag)
 			if index == -1 {
 				break
 			}
 
 			tagStartIndex := startPos + index
+			// 标签结束下标
 			tagEnd := strings.Index(html[tagStartIndex:], ">") + tagStartIndex
 			if tagEnd > tagStartIndex {
+				// 获取标签内容
 				linkTag := html[tagStartIndex:tagEnd]
 
 				// 提取href或content属性
@@ -487,6 +461,10 @@ func normalizeFaviconURL(url string) string {
 }
 
 // isImagePath 检查路径是否为图片格式
+//
+//	@Description: 通过文件扩展名判断是否为图片
+//	@param path 文件路径
+//	@return bool 是否为图片路径
 func isImagePath(path string) bool {
 	lowerPath := strings.ToLower(path)
 	extensions := []string{".ico", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}

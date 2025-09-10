@@ -306,10 +306,10 @@ var FunctionEnvOptions = []cel.EnvOption{
 			[]*cel.Type{cel.DynType}, cel.IntType,
 			cel.UnaryBinding(func(value ref.Val) ref.Val {
 				if b, ok := value.(types.Bytes); ok {
-					return types.Int(common.Mmh3Hash32(common.Base64Encode(b)))
+					return types.Int(common.Mmh3Hash32(common.StandBase64Encode(b)))
 				}
 				if bStr, ok := value.(types.String); ok {
-					return types.Int(common.Mmh3Hash32(common.Base64Encode([]byte(bStr))))
+					return types.Int(common.Mmh3Hash32(common.StandBase64Encode([]byte(bStr))))
 				}
 				return types.ValOrErr(value, "unexpected type '%v' passed to faviconHash", value.Type())
 			}),
