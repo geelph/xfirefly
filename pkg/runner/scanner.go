@@ -29,12 +29,12 @@ func getTargets(options *types.CmdOptionsType) ([]string, error) {
 	}
 
 	// 其次从文件读取（流式扫描，内存占用更低）
-	if options.TargetsFile == "" {
+	if options.TargetsList == "" {
 		return nil, fmt.Errorf("目标文件为空")
 	}
 
 	// 读取文件内容
-	file, err := os.Open(options.TargetsFile)
+	file, err := os.Open(options.TargetsList)
 	if err != nil {
 		//logger.Error(fmt.Sprintf("读取目标文件失败: %v", err))
 		return nil, fmt.Errorf("读取目标文件失败: %v", err)

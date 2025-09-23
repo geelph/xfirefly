@@ -2,66 +2,69 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"xfirefly/pkg/types"
 
 	"github.com/donnie4w/go-logger/logger"
-	"github.com/projectdiscovery/goflags"
+
+	"github.com/spf13/pflag"
 )
 
-// NewCmdOptions 创建并解析命令行选项
-func NewCmdOptions() (*types.CmdOptionsType, error) {
+// NewCmdOptions 初始化并解析命令行参数，返回 CmdOptionsType 结构体实例和可能的错误。
+// 该函数使用 pflag 包定义并解析命令行选项，支持多种扫描目标输入方式、输出配置、
+// 并发控制、超时设置、代理配置等功能。
+//
+// 返回值：
+//   - CmdOptionsType：包含解析后的命令行参数配置。
+//   - error：解析过程中可能发生的错误（当前实现始终返回 nil）。
+func NewCmdOptions() (types.CmdOptionsType, error) {
 	// 声明命令行参数类型
-	options := &types.CmdOptionsType{}
-	// 声明参数结构体
-	flagSet := goflags.NewFlagSet()
-	// 目标拆解
-	flagSet.CreateGroup("target", "TARGET",
-		flagSet.StringSliceVarP(&options.Target, "target", "u", nil, "target URLs/hosts to scan", goflags.NormalizedOriginalStringSliceOptions),
-		flagSet.StringVarP(&options.TargetsFile, "list", "l", "", "path to file containing a list of target URLs/hosts to scan (one per line)"),
-	)
-	// 结果输出
-	flagSet.CreateGroup("output", "OUTPUT",
-		flagSet.StringVarP(&options.Output, "output", "o", "", "output file to write found result"),
-		flagSet.BoolVar(&options.JSONOutput, "json", false, "write output in JSON format"),
-		flagSet.StringVar(&options.SockOutput, "sock", "", "write output socket in JSON format"),
-	)
-	// 优化参数
-	flagSet.CreateGroup("optimizations", "OPTIMIZATIONS",
-		flagSet.StringVarP(&options.Proxy, "proxy", "p", "", "string of http/socks5 proxy to use"),
-		flagSet.IntVarP(&options.Threads, "threads", "t", 5, "maximum number of requests to send per second"),
-		flagSet.IntVarP(&options.RuleThreads, "rulethreads", "rt", 200, "maximum number of fingers to send per second"),
-		flagSet.IntVar(&options.Timeout, "timeout", 3, "time to wait in seconds before timeout"),
-		flagSet.IntVar(&options.Retries, "retrise", 1, "number of times to retry a failed request"),
-		flagSet.IntVar(&options.MaxRedirects, "max-redirects", 5, "max number of redirects to follow for http templates"),
-	)
-	// 日志管理
-	flagSet.CreateGroup("debug", "DEBUG",
-		flagSet.BoolVar(&options.Debug, "debug", false, "show verbose output"),
-		flagSet.BoolVarP(&options.NoTimestamp, "no-timestamp", "ntp", false, "Output without timestamp"),
-		flagSet.BoolVar(&options.FileLog, "file-log", false, "Output the log to file"),
-	)
-	// 指纹参数
-	flagSet.CreateGroup("finger", "FINGER",
-		flagSet.StringSliceVarP(&options.FingerOptions.FingerYaml, "finger-file", "f", nil, "list of finger to run (comma-separated, file)", goflags.NormalizedStringSliceOptions),
-		flagSet.StringVarP(&options.FingerOptions.FingerPath, "finger-path", "fp", "", "finger directory to run"),
-		flagSet.BoolVarP(&options.Active, "active", "a", false, "enable active finger path"),
-	)
-	// 杂项
-	flagSet.CreateGroup("misc", "MISC",
-		flagSet.BoolVar(&options.InitConfig, "init", false, "init config file"),
-		flagSet.BoolVar(&options.PrintPreset, "print", false, "print preset all preset config"),
-		flagSet.StringVarP(&options.Config, "config", "c", "", "path to the xfirefly configuration file"),
-		flagSet.BoolVarP(&options.Version, "version", "v", false, "print version and exit"),
-	)
+	options := types.CmdOptionsType{}
+	flagset := pflag.NewFlagSet("test", pflag.ExitOnError)
 
-	// 实例化操作
-	if err := flagSet.Parse(); err != nil {
-		// 内部处理，程序会异常退出，运行不到这里
-		//return options, fmt.Errorf("The flag cannot be parsed: %s", err)
-		return options, err
+	// 定义命令行参数
+	flagset.StringSliceVarP(&options.Target, "url", "u", []string{}, "扫描目标: 可以为URL/IP/域名/Host:Port等多种形式的混合输入")
+	flagset.StringVarP(&options.TargetsList, "list", "l", "", "目标文件: 指定含有扫描目标的文本文件")
+	flagset.StringVarP(&options.Output, "output", "o", "", "结果输出: 指定保存结果的文件路径（txt/csv，根据扩展名自动识别；也可配合 --json 输出JSON）")
+	flagset.BoolVar(&options.JSONOutput, "json", false, "使用JSON格式输出结果到文件")
+	flagset.StringVar(&options.SockOutput, "sock", "", "结果输出: 输出socket文件")
+	flagset.StringVarP(&options.Proxy, "proxy", "p", "", "HTTP客户端代理: [http|https|socks5://][username[:password]@]host[:port]")
+	flagset.IntVarP(&options.Threads, "threads", "t", 5, "URL并发线程数")
+	flagset.IntVar(&options.RuleThreads, "rule-threads", 200, "指纹规则并发线程数")
+	flagset.IntVar(&options.Timeout, "timeout", 5, "读超时: 从连接中读取数据的最大耗时")
+	flagset.IntVar(&options.Retries, "retries", 2, "请求失败重试次数")
+	flagset.IntVar(&options.MaxRedirects, "max-redirects", 5, "最大允许 HTTP 请求跳转次数")
+	flagset.BoolVar(&options.Debug, "debug", false, "调试：打印debug日志")
+	flagset.BoolVar(&options.NoTimestamp, "no-timestamp", false, "不显示时间戳")
+	flagset.BoolVar(&options.FileLog, "file-log", false, "保存日志到文件")
+	flagset.StringVar(&options.FingerOptions.FingerPath, "finger-path", "", "指纹路径")
+	flagset.StringSliceVarP(&options.FingerOptions.FingerYaml, "finger", "f", []string{}, "指纹文件")
+	flagset.BoolVarP(&options.Active, "active", "a", false, "启用主动指纹探测")
+	flagset.BoolVar(&options.InitConfig, "init-config", false, "初始化配置文件")
+	flagset.BoolVar(&options.PrintPreset, "print", false, "打印所有预置配置")
+	flagset.StringVarP(&options.Config, "config", "c", "config.yaml", "配置文件路径")
+	flagset.BoolVarP(&options.Version, "version", "v", false, "查看版本信息")
+
+	// 禁止自动排序参数
+	flagset.SortFlags = false
+
+	// 自定义 Usage
+	flagset.Usage = func() {
+		fmt.Fprintf(pflag.CommandLine.Output(), "用法: %s [选项]\n", os.Args[0])
+		fmt.Println("Web应用指纹识别工具")
+		fmt.Println()
+		fmt.Println("选项:")
+		flagset.PrintDefaults()
+		fmt.Println()
+		fmt.Println("示例:")
+		fmt.Println("  ", os.Args[0], "-t http://test.com")
 	}
+
+	// 解析命令行参数
+	flagset.Parse(os.Args[1:])
+
 	// 验证必参数是否传入
 	if err := verifyOptions(options); err != nil {
 		return options, err
@@ -71,7 +74,7 @@ func NewCmdOptions() (*types.CmdOptionsType, error) {
 }
 
 // verifyOptions 验证命令行选项
-func verifyOptions(opt *types.CmdOptionsType) error {
+func verifyOptions(opt types.CmdOptionsType) error {
 	// 使用反射自动序列化命令行选项用于调试
 	//optionsStr := fmt.Sprintf("%+v", *opt)
 	//fmt.Println("命令行选项：", optionsStr)
@@ -81,7 +84,7 @@ func verifyOptions(opt *types.CmdOptionsType) error {
 	}
 
 	// 验证目标输入
-	if len(opt.Target) == 0 && opt.TargetsFile == "" {
+	if len(opt.Target) == 0 && opt.TargetsList == "" {
 		return fmt.Errorf("必须使用`-u`或`-l`参数指定扫描目标")
 	}
 

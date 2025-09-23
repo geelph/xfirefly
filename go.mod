@@ -3,13 +3,11 @@ module xfirefly
 go 1.25.0
 
 require (
-	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/donnie4w/go-logger v0.28.0
 	github.com/fatih/color v1.18.0
 	github.com/google/cel-go v0.26.1
 	github.com/panjf2000/ants/v2 v2.11.3
-	github.com/projectdiscovery/goflags v0.1.74
 	github.com/projectdiscovery/rawhttp v0.1.90
 	github.com/projectdiscovery/wappalyzergo v0.2.24
 	github.com/schollz/progressbar/v3 v3.18.0
@@ -22,7 +20,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/chainreactors/proxyclient v1.0.3
+require (
+	github.com/spf13/pflag v1.0.10
+	golang.org/x/text v0.28.0
+)
 
 require (
 	cel.dev/expr v0.24.0 // indirect
@@ -34,7 +35,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
-	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/donnie4w/gofer v0.1.8 // indirect
@@ -43,11 +43,11 @@ require (
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.10 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -69,10 +69,8 @@ require (
 	github.com/projectdiscovery/retryablehttp-go v1.0.102 // indirect
 	github.com/projectdiscovery/utils v0.4.13 // indirect
 	github.com/refraction-networking/utls v1.8.0 // indirect
-	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
-	github.com/shadowsocks/go-shadowsocks2 v0.1.5 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tidwall/btree v1.4.3 // indirect
@@ -98,7 +96,6 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250212204824-5a70512c5d8b // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
