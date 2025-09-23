@@ -4,7 +4,7 @@ BINARY_NAME=xfirefly
 # 定义输出目录
 OUTPUT_DIR=bin
 
-VERSION    = $(shell git tag)
+VERSION    = $(shell git tag --sort=-creatordate | head -n 1)
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
 BUILD_TIME = $(shell date "+%F")
 
