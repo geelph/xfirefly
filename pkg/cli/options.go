@@ -19,9 +19,9 @@ import (
 // 返回值：
 //   - CmdOptionsType：包含解析后的命令行参数配置。
 //   - error：解析过程中可能发生的错误（当前实现始终返回 nil）。
-func NewCmdOptions() (types.CmdOptionsType, error) {
+func NewCmdOptions() (*types.CmdOptionsType, error) {
 	// 声明命令行参数类型
-	options := types.CmdOptionsType{}
+	options := &types.CmdOptionsType{}
 	flagset := pflag.NewFlagSet("test", pflag.ExitOnError)
 
 	// 定义命令行参数
@@ -74,7 +74,7 @@ func NewCmdOptions() (types.CmdOptionsType, error) {
 }
 
 // verifyOptions 验证命令行选项
-func verifyOptions(opt types.CmdOptionsType) error {
+func verifyOptions(opt *types.CmdOptionsType) error {
 	// 使用反射自动序列化命令行选项用于调试
 	//optionsStr := fmt.Sprintf("%+v", *opt)
 	//fmt.Println("命令行选项：", optionsStr)

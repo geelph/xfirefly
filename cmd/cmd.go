@@ -107,7 +107,7 @@ func Execute() {
 	startTime := time.Now()
 
 	// 运行核心程序
-	run(&options)
+	run(options)
 
 	// 运行结束时间
 	// 计算并打印运行时间

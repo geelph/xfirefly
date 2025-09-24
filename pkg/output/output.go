@@ -9,7 +9,7 @@ package output
 // 4. 支持控制台彩色输出和进度条显示
 
 // 文件组织:
-// - types.go: 数据结构和全局变量定义
+// - options.go: 数据结构和全局变量定义
 // - file.go: 文件输出相关功能
 // - sock.go: Socket输出相关功能
 // - util.go: 辅助函数和工具方法
